@@ -20,6 +20,7 @@
             <h1>Auto Partners Group</h1>
             <p class="subtitle">Добро пожаловать в семью APG</p>
         </div>
+        <button class="admin-trigger-btn" onclick="openAdminModal()">⚡</button>
     </header>
 
     <main class="container">
@@ -65,7 +66,7 @@
             <div class="shop-container">
                 <div class="shop-info">
                     <h3>Автозапчасти в наличии и под заказ</h3>
-                    <p class="shop-desc">Широкий ассортимент качественных товаров для вашего автомобиля: автохимия, стильные автоаксессуары, шины и диски любых размеров.</p>
+                    <p class="shop-desc">Широкий ассортимент качественных товаров для вашего автомобиля: автохимия, автоаксессуары, шины и диски любых размеров.</p>
                     <div class="location-badge">
                         <strong>Наш адрес:</strong> г. Елабуга, Окружное шоссе 35Б, СТО ФАЭТОН
                     </div>
@@ -89,28 +90,208 @@
 
         <section class="section-block service-section">
             <h2>Услуги сообщества</h2>
-            <div class="service-card">
-                <div class="service-details">
-                    <h3>Услуги сухого тумана & Химчистка</h3>
-                    <p>Устранение любых неприятных запахов в салоне автомобиля с гарантией качества и отличным, стойким ароматом. Профессиональный подход. Делаем уважительно и достойно!</p>
-                    <div class="discount-banner">
-                        <span class="glow-text">Ребятам с наклейкой АПГ — СКИДОНЧИК!</span>
+            <div class="services-vertical-list" id="dynamic-services-list">
+                
+                <div class="service-card">
+                    <div class="service-details">
+                        <h3>Услуги сухого тумана & Химчистка</h3>
+                        <p>Устранение любых неприятных запахов в салоне автомобиля с гарантией качества и отличным, стойким ароматом. Профессиональный подход. Делаем уважительно и достойно!</p>
+                        <div class="discount-banner"><span class="glow-text">Ребятам с наклейкой АПГ — СКИДОНЧИК!</span></div>
+                    </div>
+                    <div class="service-order">
+                        <h4>Наши работы и запись:</h4>
+                        <a href="https://t.me/Auto_Prestige_Group" target="_blank" class="tg-button prestige-btn">Работы химчистки</a>
+                        <a href="https://t.me/dimjeeeek" target="_blank" class="tg-button">Написать @dimjeeeek</a>
+                        <a href="tel:+79179120632" class="phone-button">Позвонить +7 (917) 912-06-32</a>
                     </div>
                 </div>
-                <div class="service-order">
-                    <h4>Наши работы и запись:</h4>
-                    <a href="https://t.me/Auto_Prestige_Group" target="_blank" class="tg-button prestige-btn">Работы химчистки</a>
-                    <a href="https://t.me/dimjeeeek" target="_blank" class="tg-button">Написать @dimjeeeek</a>
-                    <a href="tel:+79179120632" class="phone-button">Позвонить +7 (917) 912-06-32</a>
+
+                <div class="service-card tuning-card">
+                    <div class="service-details">
+                        <h3>Тюнинг салона & Доп. оборудование</h3>
+                        <p class="price-tag">Стоимость: от 4 000 рублей</p>
+                        <p>Качественная установка контурной подсветки в ваше авто для создания эксклюзивной атмосферы. А также профессиональный монтаж: туманки, Android-магнитолы, камеры заднего вида и надежные сигнализации.</p>
+                    </div>
+                    <div class="service-order">
+                        <h4>Связаться с мастером:</h4>
+                        <a href="https://t.me/whitecrowl" target="_blank" class="tg-button blue-btn">Написать @whitecrowl</a>
+                        <a href="tel:+79586200565" class="phone-button">Позвонить +7 (958) 620-05-65</a>
+                    </div>
                 </div>
+
+            </div>
+        </section>
+
+        <section class="section-block friends-section">
+            <h2>Наши друзья</h2>
+            <div class="friends-grid" id="dynamic-friends-list">
+                <a href="https://t.me/whitecrowl" target="_blank" class="friend-card">
+                    <div class="friend-avatar">👤</div>
+                    <div class="friend-info">
+                        <h3>@whitecrowl</h3>
+                        <p>Надежный партнер клуба</p>
+                    </div>
+                </a>
             </div>
         </section>
 
     </main>
 
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <span class="close-modal-btn" onclick="closeAdminModal()">&times;</span>
+            
+            <div id="admin-auth-step">
+                <h3>Вход в панель управления</h3>
+                <input type="password" id="secret-code-input" placeholder="Введите секретный код...">
+                <button class="tg-button" onclick="checkSecretCode()">Войти</button>
+                <p id="auth-error-msg" class="error-text"></p>
+            </div>
+
+            <div id="admin-panel-step" style="display: none;">
+                <h3>Панель управления APG</h3>
+                
+                <div class="admin-subform">
+                    <h4>Добавить друга</h4>
+                    <input type="text" id="new-friend-tg" placeholder="Telegram Юзернейм (например, @username)">
+                    <button class="tg-button blue-btn" onclick="addFriendFromAdmin()">Добавить друга</button>
+                </div>
+
+                <div class="admin-subform">
+                    <h4>Добавить услугу / Визитку</h4>
+                    <input type="text" id="new-service-title" placeholder="Название услуги / визитки">
+                    <input type="text" id="new-service-price" placeholder="Цена (если есть, например: 4000 руб.)">
+                    <textarea id="new-service-desc" placeholder="Описание услуги..."></textarea>
+                    <input type="text" id="new-service-tg" placeholder="Telegram для связи">
+                    <input type="text" id="new-service-phone" placeholder="Телефон для связи">
+                    <button class="tg-button" onclick="addServiceFromAdmin()">Разместить услугу</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        <p>&copy; 2026 Auto Partners Group найлека = скидка. Все права защищены.</p>
+        <p>&copy; 2026 Auto Partners Group. Все права защищены.</p>
     </footer>
 
+    <script>
+        function openAdminModal() {
+            document.getElementById('adminModal').style.display = 'flex';
+        }
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+            document.getElementById('secret-code-input').value = '';
+            document.getElementById('auth-error-msg').innerText = '';
+        }
+        function checkSecretCode() {
+            const code = document.getElementById('secret-code-input').value;
+            if (code === 'apg1') {
+                document.getElementById('admin-auth-step').style.display = 'none';
+                document.getElementById('admin-panel-step').style.display = 'block';
+            } else {
+                document.getElementById('auth-error-msg').innerText = 'Неверный секретный код!';
+            }
+        }
+
+        // Загрузка и сохранение динамических элементов через localStorage
+        window.onload = function() {
+            loadSavedData();
+        };
+
+        function addFriendFromAdmin() {
+            let tg = document.getElementById('new-friend-tg').value.trim();
+            if(!tg) return alert('Введите юзернейм!');
+            if(!tg.startsWith('@')) tg = '@' + tg;
+            
+            let friends = JSON.parse(localStorage.getItem('apg_friends') || '[]');
+            friends.push(tg);
+            localStorage.setItem('apg_friends', JSON.stringify(friends));
+            
+            document.getElementById('new-friend-tg').value = '';
+            loadSavedData();
+            alert('Друг успешно добавлен!');
+        }
+
+        function addServiceFromAdmin() {
+            const title = document.getElementById('new-service-title').value.trim();
+            const price = document.getElementById('new-service-price').value.trim();
+            const desc = document.getElementById('new-service-desc').value.trim();
+            let tg = document.getElementById('new-service-tg').value.trim();
+            const phone = document.getElementById('new-service-phone').value.trim();
+
+            if(!title || !desc) return alert('Заполните название и описание!');
+            if(tg && !tg.startsWith('@')) tg = '@' + tg;
+
+            const newService = { title, price, desc, tg, phone };
+            let services = JSON.parse(localStorage.getItem('apg_services') || '[]');
+            services.push(newService);
+            localStorage.setItem('apg_services', JSON.stringify(services));
+
+            document.getElementById('new-service-title').value = '';
+            document.getElementById('new-service-price').value = '';
+            document.getElementById('new-service-desc').value = '';
+            document.getElementById('new-service-tg').value = '';
+            document.getElementById('new-service-phone').value = '';
+
+            loadSavedData();
+            alert('Услуга/визитка успешно добавлена!');
+        }
+
+        function loadSavedData() {
+            // Рендер друзей
+            const friendsGrid = document.getElementById('dynamic-friends-list');
+            let baseFriendsHtml = `
+                <a href="https://t.me/whitecrowl" target="_blank" class="friend-card">
+                    <div class="friend-avatar">👤</div>
+                    <div class="friend-info">
+                        <h3>@whitecrowl</h3>
+                        <p>Надежный партнер клуба</p>
+                    </div>
+                </a>`;
+            
+            let savedFriends = JSON.parse(localStorage.getItem('apg_friends') || '[]');
+            savedFriends.forEach(tg => {
+                baseFriendsHtml += `
+                    <a href="https://t.me/${tg.replace('@','')}" target="_blank" class="friend-card">
+                        <div class="friend-avatar">👤</div>
+                        <div class="friend-info">
+                            <h3>${tg}</h3>
+                            <p>Друг сообщества APG</p>
+                        </div>
+                    </a>`;
+            });
+            friendsGrid.innerHTML = baseFriendsHtml;
+
+            // Рендер услуг
+            const servicesList = document.getElementById('dynamic-services-list');
+            let savedServices = JSON.parse(localStorage.getItem('apg_services') || '[]');
+            
+            // Удаляем старые динамические блоки, оставляя базовые
+            const baseServices = servicesList.querySelectorAll('.service-card:not(.dynamic-service)');
+            let baseServicesHtml = '';
+            baseServices.forEach(el => baseServicesHtml += el.outerHTML);
+
+            savedServices.forEach(s => {
+                let priceHtml = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
+                let tgBtn = s.tg ? `<a href="https://t.me/${s.tg.replace('@','')}" target="_blank" class="tg-button blue-btn">Написать ${s.tg}</a>` : '';
+                let phoneBtn = s.phone ? `<a href="tel:${s.phone}" class="phone-button">Позвонить ${s.phone}</a>` : '';
+
+                baseServicesHtml += `
+                    <div class="service-card dynamic-service">
+                        <div class="service-details">
+                            <h3>${s.title}</h3>
+                            ${priceHtml}
+                            <p>${s.desc}</p>
+                        </div>
+                        <div class="service-order">
+                            <h4>Контакты:</h4>
+                            ${tgBtn}
+                            ${phoneBtn}
+                        </div>
+                    </div>`;
+            });
+            servicesList.innerHTML = baseServicesHtml;
+        }
+    </script>
 </body>
 </html>
