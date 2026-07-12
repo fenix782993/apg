@@ -109,9 +109,6 @@
         <div id="services-tab" class="tab-content">
             <section class="section-block service-section">
                 <h2>Услуги сообщества</h2>
-                
-                <div class="sub-navigation-tabs" id="services-subtabs-container"></div>
-
                 <div class="services-vertical-list" id="services-list-container"></div>
             </section>
         </div>
@@ -152,18 +149,9 @@
                 </div>
 
                 <div class="admin-subform">
-                    <h4>Добавить услугу</h4>
+                    <h4>Добавить услугу в общий список</h4>
                     <input type="text" id="new-service-title" placeholder="Название услуги">
                     <input type="text" id="new-service-price" placeholder="Цена (например: 4000 рублей)">
-                    
-                    <label style="font-size: 0.85rem; color: #cbd5e1; display:block; margin-bottom: 4px;">Выберите или создайте вкладку:</label>
-                    <select id="new-service-category" onchange="toggleCustomCategoryInput()">
-                        <option value="Химчистка">Химчистка</option>
-                        <option value="Эко туман">Эко туман</option>
-                        <option value="__CUSTOM__">+ Создать новую вкладку...</option>
-                    </select>
-                    <input type="text" id="new-service-custom-category" placeholder="Название новой вкладки" style="display: none;">
-
                     <textarea id="new-service-desc" placeholder="Описание услуги..."></textarea>
                     <input type="text" id="new-service-tg" placeholder="Telegram мастера">
                     <input type="text" id="new-service-phone" placeholder="Телефон">
@@ -183,12 +171,10 @@
     </footer>
 
     <script>
-        // Твоя ссылка Firebase уже встроена!
         const FIREBASE_URL = "https://apg-site-56d91-default-rtdb.firebaseio.com/";
 
         let globalFriends = [];
         let globalServices = [];
-        let activeServiceSubtab = "";
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
@@ -203,7 +189,6 @@
 
                 renderData();
                 if(document.getElementById('adminModal').style.display === 'flex') {
-                    updateAdminCategorySelect();
                     renderAdminControls();
                 }
             } catch(e) {
@@ -211,7 +196,7 @@
             }
         }
 
-        setInterval(loadFirebaseData, 3000); // Проверка обновлений каждые 3 секунды
+        setInterval(loadFirebaseData, 3000);
         window.onload = loadFirebaseData;
 
         function switchTab(tabId, element) {
@@ -221,26 +206,8 @@
             if(element) element.classList.add('active');
         }
 
-        function switchServiceSubtab(categoryName, element) {
-            activeServiceSubtab = categoryName;
-            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
-            if(element) element.classList.add('active');
-            renderServicesList();
-        }
-
-        function toggleCustomCategoryInput() {
-            const select = document.getElementById('new-service-category');
-            const customInput = document.getElementById('new-service-custom-category');
-            if (select && select.value === '__CUSTOM__') {
-                customInput.style.display = 'block';
-            } else if (customInput) {
-                customInput.style.display = 'none';
-            }
-        }
-
         function openAdminModal() { 
             document.getElementById('adminModal').style.display = 'flex'; 
-            updateAdminCategorySelect();
             renderAdminControls(); 
         }
         
@@ -259,42 +226,33 @@
             }
         }
 
-        function getCurrentCategories() {
-            let categories = new Set(["Химчистка", "Эко туман"]);
-            globalServices.forEach(s => { if(s.category) categories.add(s.category); });
-            return categories;
-        }
-
-        function updateAdminCategorySelect() {
-            const select = document.getElementById('new-service-category');
-            if(!select) return;
-            let categories = getCurrentCategories();
-            
-            let html = '';
-            categories.forEach(cat => { html += `<option value="${cat}">${cat}</option>`; });
-            html += `<option value="__CUSTOM__">+ Создать новую вкладку...</option>`;
-            select.innerHTML = html;
-            toggleCustomCategoryInput();
-        }
-
         function renderData() {
             document.getElementById('services-tab-btn').innerText = `Услуги (${globalServices.length})`;
 
-            let categories = getCurrentCategories();
+            // Вывод ВСЕХ услуг одним общим списком
+            let servicesHtml = '';
+            globalServices.forEach((s, index) => {
+                let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
+                let extra = s.extraBtn ? `<a href="${s.extraBtn.link}" target="_blank" class="tg-button prestige-btn">${s.extraBtn.text}</a>` : '';
+                let tg = s.tg ? `<a href="https://t.me/${s.tg.replace('@','')}" target="_blank" class="tg-button blue-btn">Написать ${s.tg}</a>` : '';
+                let phone = s.phone ? `<a href="tel:${s.phone}" class="phone-button">Позвонить ${s.phone}</a>` : '';
 
-            if (!activeServiceSubtab || !categories.has(activeServiceSubtab)) {
-                activeServiceSubtab = Array.from(categories)[0] || "Химчистка";
-            }
-
-            let subtabsHtml = '';
-            categories.forEach(cat => {
-                let activeClass = cat === activeServiceSubtab ? 'active' : '';
-                subtabsHtml += `<button class="sub-tab-btn ${activeClass}" onclick="switchServiceSubtab('${cat}', this)">${cat}</button>`;
+                servicesHtml += `
+                    <div class="service-card ${index % 2 !== 0 ? 'tuning-card' : ''}">
+                        <div class="service-details">
+                            <h3>№${index + 1}. ${s.title}</h3>
+                            ${price}
+                            <p>${s.desc}</p>
+                        </div>
+                        <div class="service-order">
+                            <h4>Контакты и запись:</h4>
+                            ${extra} ${tg} ${phone}
+                        </div>
+                    </div>`;
             });
-            document.getElementById('services-subtabs-container').innerHTML = subtabsHtml;
+            document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">Список услуг пуст</p>';
 
-            renderServicesList();
-
+            // Вывод друзей
             const titles = ["Администрация", "Партнер APG", "Друг сообщества", "VIP Клуб"];
             let groupedHtml = '';
 
@@ -323,31 +281,6 @@
             document.getElementById('friends-grouped-container').innerHTML = groupedHtml || '<p style="text-align:center; color:#64748b;">Список друзей пуст</p>';
         }
 
-        function renderServicesList() {
-            const filteredServices = globalServices.filter(s => (s.category || "Химчистка") === activeServiceSubtab);
-            let servicesHtml = '';
-            filteredServices.forEach((s, index) => {
-                let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
-                let extra = s.extraBtn ? `<a href="${s.extraBtn.link}" target="_blank" class="tg-button prestige-btn">${s.extraBtn.text}</a>` : '';
-                let tg = s.tg ? `<a href="https://t.me/${s.tg.replace('@','')}" target="_blank" class="tg-button blue-btn">Написать ${s.tg}</a>` : '';
-                let phone = s.phone ? `<a href="tel:${s.phone}" class="phone-button">Позвонить ${s.phone}</a>` : '';
-
-                servicesHtml += `
-                    <div class="service-card ${index % 2 !== 0 ? 'tuning-card' : ''}">
-                        <div class="service-details">
-                            <h3>№${index + 1}. ${s.title}</h3>
-                            ${price}
-                            <p>${s.desc}</p>
-                        </div>
-                        <div class="service-order">
-                            <h4>Контакты и запись:</h4>
-                            ${extra} ${tg} ${phone}
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">В этой вкладке пока нет услуг</p>';
-        }
-
         async function addNewFriend() {
             let tg = document.getElementById('new-friend-tg').value.trim();
             let title = document.getElementById('new-friend-title').value;
@@ -370,21 +303,12 @@
             let tg = document.getElementById('new-service-tg').value.trim();
             const phone = document.getElementById('new-service-phone').value.trim();
             
-            let categorySelect = document.getElementById('new-service-category').value;
-            let category = categorySelect;
-            
-            if (categorySelect === '__CUSTOM__') {
-                const customCat = document.getElementById('new-service-custom-category').value.trim();
-                if(!customCat) return alert('Введите название для новой вкладки!');
-                category = customCat;
-            }
-
             if(!title || !desc) return alert('Заполните название и описание!');
             if(tg && !tg.startsWith('@')) tg = '@' + tg;
 
             await fetch(`${FIREBASE_URL}services.json`, {
                 method: 'POST',
-                body: JSON.stringify({ title, category, price, desc, tg, phone })
+                body: JSON.stringify({ title, price, desc, tg, phone })
             });
             
             document.getElementById('new-service-title').value = '';
@@ -392,9 +316,7 @@
             document.getElementById('new-service-desc').value = '';
             document.getElementById('new-service-tg').value = '';
             document.getElementById('new-service-phone').value = '';
-            document.getElementById('new-service-custom-category').value = '';
             
-            activeServiceSubtab = category;
             loadFirebaseData();
         }
 
@@ -408,20 +330,6 @@
             loadFirebaseData();
         }
 
-        // Удаление вкладки целиком
-        async function removeTabCategory(categoryName) {
-            if(!confirm(`Вы уверены, что хотите полностью удалить вкладку "${categoryName}" и все связанные услуги?`)) return;
-            
-            const targets = globalServices.filter(s => (s.category || "Химчистка") === categoryName);
-            
-            for (let item of targets) {
-                await fetch(`${FIREBASE_URL}services/${item.firebaseId}.json`, { method: 'DELETE' });
-            }
-            
-            activeServiceSubtab = "";
-            loadFirebaseData();
-        }
-
         function renderAdminControls() {
             let html = '<p style="font-size:0.9rem; color:#94a3b8; margin-bottom:5px;">Друзья:</p>';
             globalFriends.forEach((f) => {
@@ -431,20 +339,10 @@
                 </div>`;
             });
 
-            html += '<p style="font-size:0.9rem; color:#00d2ff; margin-top:15px; margin-bottom:5px;">Управление вкладками услуг:</p>';
-            let categories = getCurrentCategories();
-            categories.forEach(cat => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; border: 1px solid rgba(0,210,255,0.2); padding:6px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span style="font-weight:bold; color:#fff;">📁 Вкладка: ${cat}</span>
-                    <button onclick="removeTabCategory('${cat}')" style="background:#ff0055; border:none; color:#fff; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">Удалить вкладку</button>
-                </div>`;
-            });
-
-            html += '<p style="font-size:0.9rem; color:#94a3b8; margin-top:15px; margin-bottom:5px;">Отдельные услуги:</p>';
+            html += '<p style="font-size:0.9rem; color:#94a3b8; margin-top:15px; margin-bottom:5px;">Все услуги в списке:</p>';
             globalServices.forEach((s, i) => {
-                let catBadge = s.category ? ` [${s.category}]` : ' [Химчистка]';
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>№${i+1}.${catBadge} ${s.title.substring(0,20)}...</span>
+                    <span>№${i+1}. ${s.title.substring(0,30)}...</span>
                     <button onclick="removeService('${s.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
                 </div>`;
             });
