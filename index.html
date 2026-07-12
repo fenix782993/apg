@@ -9,10 +9,7 @@
 <body>
 
     <div class="flying-logo-container">
-        <svg class="flying-logo" viewBox="0 0 100 100">
-            <path d="M20 70 L65 10 L75 10 L75 70 L85 70 L85 80 L75 80 L75 95 L65 95 L65 80 L20 80 Z M65 70 L65 28 L35 70 Z" fill="none" stroke="#00d2ff" stroke-width="4" />
-            <path d="M65 70 L65 28 L35 70 Z" fill="none" stroke="#ff0055" stroke-width="2" />
-        </svg>
+        <img src="герб1.jpg" alt="APG Герб" class="flying-logo-img">
     </div>
 
     <header class="hero-banner">
@@ -26,7 +23,7 @@
     <div class="navigation-tabs">
         <button class="tab-btn active" onclick="switchTab('chats-tab')">Чаты и ресурсы</button>
         <button class="tab-btn" onclick="switchTab('shop-tab')">Магазин запчастей</button>
-        <button class="tab-btn" onclick="switchTab('services-tab')">Услуги (${staticServices.length})</button>
+        <button class="tab-btn" onclick="switchTab('services-tab')" id="services-tab-btn">Услуги</button>
         <button class="tab-btn" onclick="switchTab('friends-tab')">Наши друзья</button>
     </div>
 
@@ -164,7 +161,7 @@
                 </div>
 
                 <div class="admin-subform">
-                    <h4>Управление и удаление</h4>
+                    <h4>Управление и удаление элементов</h4>
                     <div id="admin-manage-lists"></div>
                 </div>
 
@@ -181,7 +178,7 @@
     </footer>
 
     <script>
-        // БАЗА ДАННЫХ ВНУТРИ КОДА
+        // ДАННЫЕ ВНУТРИ КОДА (БАЗА ДАННЫХ ДЛЯ ЭКСПОРТА)
         let staticFriends = [
             { "tg": "@whitecrowl", "title": "Партнер APG" }
         ];
@@ -204,10 +201,11 @@
             }
         ];
 
-        if (!localStorage.getItem('apg_initialized_v2')) {
+        // Первичная настройка локального кэша
+        if (!localStorage.getItem('apg_initialized_v3')) {
             localStorage.setItem('apg_friends_db', JSON.stringify(staticFriends));
             localStorage.setItem('apg_services_db', JSON.stringify(staticServices));
-            localStorage.setItem('apg_initialized_v2', 'true');
+            localStorage.setItem('apg_initialized_v3', 'true');
         }
 
         function switchTab(tabId) {
@@ -233,7 +231,10 @@
             const friends = JSON.parse(localStorage.getItem('apg_friends_db')) || [];
             const services = JSON.parse(localStorage.getItem('apg_services_db')) || [];
 
-            // 1. Отрисовка услуг с нумерацией
+            // Обновление счетчика в кнопке навигации
+            document.getElementById('services-tab-btn').innerText = `Услуги (${services.length})`;
+
+            // Вывод услуг с нумерацией
             let servicesHtml = '';
             services.forEach((s, index) => {
                 let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
@@ -256,7 +257,7 @@
             });
             document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b;">Услуг пока нет</p>';
 
-            // 2. Отрисовка друзей, сгруппированных по Титулам
+            // Вывод друзей, разделенных по титулам
             const titles = ["Администрация", "Партнер APG", "Друг сообщества", "VIP Клуб"];
             let groupedHtml = '';
 
@@ -338,7 +339,7 @@
         function renderAdminControls() {
             const friends = JSON.parse(localStorage.getItem('apg_friends_db')) || [];
             const services = JSON.parse(localStorage.getItem('apg_services_db')) || [];
-            let html = '<p style="font-size:0.9rem; color:#94a3b8; margin-bottom:5px;">Удалить друга:</p>';
+            let html = '<p style="font-size:0.9rem; color:#94a3b8; margin-bottom:5px;">Друзья:</p>';
             
             friends.forEach((f, i) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
@@ -347,7 +348,7 @@
                 </div>`;
             });
 
-            html += '<p style="font-size:0.9rem; color:#94a3b8; margin-top:10px; margin-bottom:5px;">Удалить услугу:</p>';
+            html += '<p style="font-size:0.9rem; color:#94a3b8; margin-top:10px; margin-bottom:5px;">Услуги:</p>';
             services.forEach((s, i) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
                     <span>№${i+1}. ${s.title.substring(0,25)}...</span>
