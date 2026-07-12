@@ -7,6 +7,7 @@
 }
 
 body {
+    background-color: #0f172a !important; /* Безопасный фон: если bg.jpg упадет, сайт останется темным */
     background: linear-gradient(rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.99)), url('bg.jpg') no-repeat center center fixed;
     background-size: cover;
     color: #ffffff;
@@ -254,6 +255,7 @@ footer { text-align: center; padding: 25px; color: #64748b; font-size: 0.8rem; m
     .hero-banner { height: 26vh; }
     .navigation-tabs { gap: 6px; }
     .tab-btn { padding: 10px 14px; font-size: 0.82rem; width: 48%; text-align: center; }
+    .tab-btn:last-child { width: 98%; } /* Кнопка "Авто из Кореи" красиво встанет внизу на всю ширину мобильного меню */
     .shop-container, .service-card { grid-template-columns: 1fr; padding: 20px; }
     .flying-logo-container { width: 75vw; height: 75vw; }
 }

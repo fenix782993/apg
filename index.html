@@ -21,10 +21,11 @@
     </header>
 
     <div class="navigation-tabs">
-        <button class="tab-btn active" onclick="switchTab('chats-tab')">Чаты и ресурсы</button>
-        <button class="tab-btn" onclick="switchTab('shop-tab')">Магазин запчастей</button>
-        <button class="tab-btn" onclick="switchTab('services-tab')" id="services-tab-btn">Услуги</button>
-        <button class="tab-btn" onclick="switchTab('friends-tab')">Наши друзья</button>
+        <button class="tab-btn active" onclick="switchTab('chats-tab', this)">Чаты и ресурсы</button>
+        <button class="tab-btn" onclick="switchTab('shop-tab', this)">Магазин запчастей</button>
+        <button class="tab-btn" onclick="switchTab('services-tab', this)" id="services-tab-btn">Услуги</button>
+        <button class="tab-btn" onclick="switchTab('friends-tab', this)">Наши друзья</button>
+        <button class="tab-btn" onclick="switchTab('korea-tab', this)">Авто из Кореи</button>
     </div>
 
     <main class="container">
@@ -68,11 +69,6 @@
                         <p>Качественный звук, инсталляции и настройка в авто.</p>
                         <span class="btn">Перейти</span>
                     </a>
-                    <a href="https://t.me/GlobalAutoExportt" target="_blank" class="card">
-                        <h3>Авто из Кореи, Японии, Китая</h3>
-                        <p>Заказ и доставка автомобилей напрямую под ключ.</p>
-                        <span class="btn">Подобрать авто</span>
-                    </a>
                 </div>
             </section>
         </div>
@@ -110,7 +106,7 @@
             <section class="section-block service-section">
                 <h2>Услуги сообщества</h2>
                 <div class="services-vertical-list" id="services-list-container">
-                    </div>
+                </div>
             </section>
         </div>
 
@@ -118,7 +114,25 @@
             <section class="section-block friends-section">
                 <h2>Наши друзья и партнеры</h2>
                 <div id="friends-grouped-container">
+                </div>
+            </section>
+        </div>
+
+        <div id="korea-tab" class="tab-content">
+            <section class="section-block info-section">
+                <h2>Авто из Кореи, Японии, Китая</h2>
+                <div class="shop-container" style="border-color: #00d2ff;">
+                    <div class="shop-info">
+                        <h3>Заказ и доставка автомобилей напрямую под ключ</h3>
+                        <p class="shop-desc">Пригоняем проверенные автомобили с аукционов и внутренних рынков. Полное сопровождение сделки, растаможка и доставка в ваш город.</p>
+                        <div class="location-badge" style="border-left-color: #00d2ff;">
+                            <strong>Официальный ресурс:</strong> Группа Global Auto Export
+                        </div>
                     </div>
+                    <div class="service-order" style="justify-content: center;">
+                        <a href="https://t.me/GlobalAutoExportt" target="_blank" class="tg-button blue-btn" style="text-align: center;">Подобрать авто в Telegram</a>
+                    </div>
+                </div>
             </section>
         </div>
 
@@ -178,7 +192,6 @@
     </footer>
 
     <script>
-        // ДАННЫЕ ВНУТРИ КОДА (БАЗА ДАННЫХ ДЛЯ ЭКСПОРТА)
         let staticFriends = [
             { "tg": "@whitecrowl", "title": "Партнер APG" }
         ];
@@ -201,18 +214,23 @@
             }
         ];
 
-        // Первичная настройка локального кэша
-        if (!localStorage.getItem('apg_initialized_v3')) {
+        if (!localStorage.getItem('apg_initialized_v4')) {
             localStorage.setItem('apg_friends_db', JSON.stringify(staticFriends));
             localStorage.setItem('apg_services_db', JSON.stringify(staticServices));
-            localStorage.setItem('apg_initialized_v3', 'true');
+            localStorage.setItem('apg_initialized_v4', 'true');
         }
 
-        function switchTab(tabId) {
+        function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            } else {
+                // Фоллбэк на случай вызова без элемента
+                const currentBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(tabId));
+                if (currentBtn) currentBtn.classList.add('active');
+            }
         }
 
         function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; renderAdminControls(); }
@@ -231,10 +249,8 @@
             const friends = JSON.parse(localStorage.getItem('apg_friends_db')) || [];
             const services = JSON.parse(localStorage.getItem('apg_services_db')) || [];
 
-            // Обновление счетчика в кнопке навигации
             document.getElementById('services-tab-btn').innerText = `Услуги (${services.length})`;
 
-            // Вывод услуг с нумерацией
             let servicesHtml = '';
             services.forEach((s, index) => {
                 let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
@@ -257,7 +273,6 @@
             });
             document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b;">Услуг пока нет</p>';
 
-            // Вывод друзей, разделенных по титулам
             const titles = ["Администрация", "Партнер APG", "Друг сообщества", "VIP Клуб"];
             let groupedHtml = '';
 
