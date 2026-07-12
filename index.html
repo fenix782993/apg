@@ -129,7 +129,7 @@
                     <div class="friend-avatar">👤</div>
                     <div class="friend-info">
                         <h3>@whitecrowl</h3>
-                        <p>Надежный партнер клуба</p>
+                        <p class="status-badge partner">Партнер APG</p>
                     </div>
                 </a>
             </div>
@@ -154,6 +154,12 @@
                 <div class="admin-subform">
                     <h4>Добавить друга</h4>
                     <input type="text" id="new-friend-tg" placeholder="Telegram Юзернейм (например, @username)">
+                    <select id="new-friend-title" style="width: 100%; padding: 12px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; margin-bottom: 15px;">
+                        <option value="Партнер APG">Партнер APG</option>
+                        <option value="Друг сообщества">Друг сообщества</option>
+                        <option value="Администрация">Администрация</option>
+                        <option value="VIP Клуб">VIP Клуб</option>
+                    </select>
                     <button class="tg-button blue-btn" onclick="addFriendFromAdmin()">Добавить друга</button>
                 </div>
 
@@ -193,18 +199,18 @@
             }
         }
 
-        // Загрузка и сохранение динамических элементов через localStorage
         window.onload = function() {
             loadSavedData();
         };
 
         function addFriendFromAdmin() {
             let tg = document.getElementById('new-friend-tg').value.trim();
+            let title = document.getElementById('new-friend-title').value;
             if(!tg) return alert('Введите юзернейм!');
             if(!tg.startsWith('@')) tg = '@' + tg;
             
             let friends = JSON.parse(localStorage.getItem('apg_friends') || '[]');
-            friends.push(tg);
+            friends.push({ tg, title });
             localStorage.setItem('apg_friends', JSON.stringify(friends));
             
             document.getElementById('new-friend-tg').value = '';
@@ -245,18 +251,23 @@
                     <div class="friend-avatar">👤</div>
                     <div class="friend-info">
                         <h3>@whitecrowl</h3>
-                        <p>Надежный партнер клуба</p>
+                        <p class="status-badge partner">Партнер APG</p>
                     </div>
                 </a>`;
             
             let savedFriends = JSON.parse(localStorage.getItem('apg_friends') || '[]');
-            savedFriends.forEach(tg => {
+            savedFriends.forEach(f => {
+                let badgeClass = 'friend-club';
+                if(f.title === 'Партнер APG') badgeClass = 'partner';
+                if(f.title === 'Администрация') badgeClass = 'admin-status';
+                if(f.title === 'VIP Клуб') badgeClass = 'vip-status';
+
                 baseFriendsHtml += `
-                    <a href="https://t.me/${tg.replace('@','')}" target="_blank" class="friend-card">
+                    <a href="https://t.me/${f.tg.replace('@','')}" target="_blank" class="friend-card">
                         <div class="friend-avatar">👤</div>
                         <div class="friend-info">
-                            <h3>${tg}</h3>
-                            <p>Друг сообщества APG</p>
+                            <h3>${f.tg}</h3>
+                            <p class="status-badge ${badgeClass}">${f.title}</p>
                         </div>
                     </a>`;
             });
@@ -266,7 +277,6 @@
             const servicesList = document.getElementById('dynamic-services-list');
             let savedServices = JSON.parse(localStorage.getItem('apg_services') || '[]');
             
-            // Удаляем старые динамические блоки, оставляя базовые
             const baseServices = servicesList.querySelectorAll('.service-card:not(.dynamic-service)');
             let baseServicesHtml = '';
             baseServices.forEach(el => baseServicesHtml += el.outerHTML);

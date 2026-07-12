@@ -319,3 +319,40 @@ footer { text-align: center; padding: 25px; color: #64748b; font-size: 0.85rem; 
     .shop-container, .service-card { grid-template-columns: 1fr; }
     .flying-logo-container { width: 65vw; height: 65vw; }
 }
+/* Новые стили для титулов друзей */
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.partner {
+    background: rgba(0, 210, 255, 0.15);
+    color: #00d2ff;
+    border: 1px solid #00d2ff;
+    box-shadow: 0 0 5px rgba(0, 210, 255, 0.3);
+}
+
+.status-badge.friend-club {
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    border: 1px solid #64748b;
+}
+
+.status-badge.admin-status {
+    background: rgba(255, 0, 85, 0.15);
+    color: #ff0055;
+    border: 1px solid #ff0055;
+    box-shadow: 0 0 5px rgba(255, 0, 85, 0.3);
+}
+
+.status-badge.vip-status {
+    background: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+    border: 1px solid #eab308;
+}
