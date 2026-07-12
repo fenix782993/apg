@@ -25,7 +25,6 @@
         <button class="tab-btn" onclick="switchTab('shop-tab', this)">Магазин запчастей</button>
         <button class="tab-btn" onclick="switchTab('services-tab', this)" id="services-tab-btn">Услуги</button>
         <button class="tab-btn" onclick="switchTab('friends-tab', this)">Наши друзья</button>
-        <button class="tab-btn" onclick="switchTab('korea-tab', this)">Авто из Кореи</button>
     </div>
 
     <main class="container">
@@ -69,6 +68,11 @@
                         <p>Качественный звук, инсталляции и настройка в авто.</p>
                         <span class="btn">Перейти</span>
                     </a>
+                    <a href="https://t.me/GlobalAutoExportt" target="_blank" class="card">
+                        <h3>Авто из Кореи, Японии, Китая</h3>
+                        <p>Заказ и доставка автомобилей напрямую под ключ.</p>
+                        <span class="btn">Подобрать авто</span>
+                    </a>
                 </div>
             </section>
         </div>
@@ -105,8 +109,12 @@
         <div id="services-tab" class="tab-content">
             <section class="section-block service-section">
                 <h2>Услуги сообщества</h2>
+                
+                <div class="sub-navigation-tabs" id="services-subtabs-container">
+                    </div>
+
                 <div class="services-vertical-list" id="services-list-container">
-                </div>
+                    </div>
             </section>
         </div>
 
@@ -114,25 +122,7 @@
             <section class="section-block friends-section">
                 <h2>Наши друзья и партнеры</h2>
                 <div id="friends-grouped-container">
-                </div>
-            </section>
-        </div>
-
-        <div id="korea-tab" class="tab-content">
-            <section class="section-block info-section">
-                <h2>Авто из Кореи, Японии, Китая</h2>
-                <div class="shop-container" style="border-color: #00d2ff;">
-                    <div class="shop-info">
-                        <h3>Заказ и доставка автомобилей напрямую под ключ</h3>
-                        <p class="shop-desc">Пригоняем проверенные автомобили с аукционов и внутренних рынков. Полное сопровождение сделки, растаможка и доставка в ваш город.</p>
-                        <div class="location-badge" style="border-left-color: #00d2ff;">
-                            <strong>Официальный ресурс:</strong> Группа Global Auto Export
-                        </div>
                     </div>
-                    <div class="service-order" style="justify-content: center;">
-                        <a href="https://t.me/GlobalAutoExportt" target="_blank" class="tg-button blue-btn" style="text-align: center;">Подобрать авто в Telegram</a>
-                    </div>
-                </div>
             </section>
         </div>
 
@@ -168,6 +158,15 @@
                     <h4>Добавить услугу</h4>
                     <input type="text" id="new-service-title" placeholder="Название услуги">
                     <input type="text" id="new-service-price" placeholder="Цена (например: 4000 рублей)">
+                    
+                    <label style="font-size: 0.85rem; color: #cbd5e1; display:block; margin-bottom: 4px;">Выберите или создайте вкладку:</label>
+                    <select id="new-service-category" onchange="toggleCustomCategoryInput()">
+                        <option value="Химчистка">Химчистка</option>
+                        <option value="Эко туман">Эко туман</option>
+                        <option value="__CUSTOM__">+ Создать новую вкладку...</option>
+                    </select>
+                    <input type="text" id="new-service-custom-category" placeholder="Название новой вкладки" style="display: none;">
+
                     <textarea id="new-service-desc" placeholder="Описание услуги..."></textarea>
                     <input type="text" id="new-service-tg" placeholder="Telegram мастера">
                     <input type="text" id="new-service-phone" placeholder="Телефон">
@@ -180,7 +179,7 @@
                 </div>
 
                 <div class="admin-subform" style="background: rgba(0, 210, 255, 0.1); padding: 10px; border-radius: 8px; border: 1px dashed #00d2ff;">
-                    <h4 style="color: #00d2ff; margin-bottom: 5px;">💾 Сохранить навсегда на GitHub</h4>
+                    <h4 style="color: #00d2ff; margin-bottom: 5px;">💾 Сохранить изменения «Для всех»</h4>
                     <button class="tg-button blue-btn" onclick="downloadUpdatedCode()">Скачать обновленный index.html</button>
                 </div>
             </div>
@@ -192,6 +191,9 @@
     </footer>
 
     <script>
+        // ИДЕНТИФИКАТОР ВЕРСИИ (Автоматически меняется при скачивании для сброса кэша у всех)
+        let currentVersionToken = "apg_db_v_initial";
+
         let staticFriends = [
             { "tg": "@whitecrowl", "title": "Партнер APG" }
         ];
@@ -199,6 +201,7 @@
         let staticServices = [
             {
                 "title": "Услуги сухого тумана & Химчистка",
+                "category": "Химчистка",
                 "price": "",
                 "desc": "Устранение любых неприятных запахов в салоне автомобиля с гарантией качества и отличным, стойким ароматом. Профессиональный подход. Делаем уважительно и достойно! Ребятам с наклейкой АПГ — СКИДОНЧИК!",
                 "tg": "@dimjeeeek",
@@ -207,6 +210,7 @@
             },
             {
                 "title": "Тюнинг салона & Доп. оборудование",
+                "category": "Химчистка",
                 "price": "от 4 000 рублей",
                 "desc": "Качественная установка контурной подсветки в ваше авто для создания эксклюзивной атмосферы. А также профессиональный монтаж: туманки, Android-магнитолы, камеры заднего вида и надежные сигнализации.",
                 "tg": "@whitecrowl",
@@ -214,27 +218,50 @@
             }
         ];
 
-        if (!localStorage.getItem('apg_initialized_v4')) {
+        // Проверка версии кэша. Если токен новый — перезаписываем локальную базу данных
+        if (localStorage.getItem('apg_version_tracker') !== currentVersionToken) {
             localStorage.setItem('apg_friends_db', JSON.stringify(staticFriends));
             localStorage.setItem('apg_services_db', JSON.stringify(staticServices));
-            localStorage.setItem('apg_initialized_v4', 'true');
+            localStorage.setItem('apg_version_tracker', currentVersionToken);
         }
+
+        let activeServiceSubtab = ""; // Хранит активную внутреннюю вкладку услуг
 
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            if (element) {
-                element.classList.add('active');
+            if(element) element.classList.add('active');
+        }
+
+        function switchServiceSubtab(categoryName, element) {
+            activeServiceSubtab = categoryName;
+            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            renderServicesList();
+        }
+
+        function toggleCustomCategoryInput() {
+            const select = document.getElementById('new-service-category');
+            const customInput = document.getElementById('new-service-custom-category');
+            if (select.value === '__CUSTOM__') {
+                customInput.style.display = 'block';
             } else {
-                // Фоллбэк на случай вызова без элемента
-                const currentBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(tabId));
-                if (currentBtn) currentBtn.classList.add('active');
+                customInput.style.display = 'none';
             }
         }
 
-        function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; renderAdminControls(); }
-        function closeAdminModal() { document.getElementById('adminModal').style.display = 'none'; document.getElementById('secret-code-input').value = ''; document.getElementById('auth-error-msg').innerText = ''; }
+        function openAdminModal() { 
+            document.getElementById('adminModal').style.display = 'flex'; 
+            updateAdminCategorySelect();
+            renderAdminControls(); 
+        }
+        
+        function closeAdminModal() { 
+            document.getElementById('adminModal').style.display = 'none'; 
+            document.getElementById('secret-code-input').value = ''; 
+            document.getElementById('auth-error-msg').innerText = ''; 
+        }
         
         function checkSecretCode() {
             if (document.getElementById('secret-code-input').value === 'apg1') {
@@ -245,34 +272,48 @@
             }
         }
 
+        function updateAdminCategorySelect() {
+            const services = JSON.parse(localStorage.getItem('apg_services_db')) || [];
+            const select = document.getElementById('new-service-category');
+            
+            // Собираем дефолтные + уже созданные категории
+            let categories = new Set(["Химчистка", "Эко туман"]);
+            services.forEach(s => { if(s.category) categories.add(s.category); });
+            
+            let html = '';
+            categories.forEach(cat => {
+                html += `<option value="${cat}">${cat}</option>`;
+            });
+            html += `<option value="__CUSTOM__">+ Создать новую вкладку...</option>`;
+            select.innerHTML = html;
+            toggleCustomCategoryInput();
+        }
+
         function renderData() {
             const friends = JSON.parse(localStorage.getItem('apg_friends_db')) || [];
             const services = JSON.parse(localStorage.getItem('apg_services_db')) || [];
 
             document.getElementById('services-tab-btn').innerText = `Услуги (${services.length})`;
 
-            let servicesHtml = '';
-            services.forEach((s, index) => {
-                let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
-                let extra = s.extraBtn ? `<a href="${s.extraBtn.link}" target="_blank" class="tg-button prestige-btn">${s.extraBtn.text}</a>` : '';
-                let tg = s.tg ? `<a href="https://t.me/${s.tg.replace('@','')}" target="_blank" class="tg-button blue-btn">Написать ${s.tg}</a>` : '';
-                let phone = s.phone ? `<a href="tel:${s.phone}" class="phone-button">Позвонить ${s.phone}</a>` : '';
+            // Строим список внутренних вкладок услуг
+            let categories = new Set(["Химчистка", "Эко туман"]);
+            services.forEach(s => { if(s.category) categories.add(s.category); });
 
-                servicesHtml += `
-                    <div class="service-card ${index % 2 !== 0 ? 'tuning-card' : ''}">
-                        <div class="service-details">
-                            <h3>№${index + 1}. ${s.title}</h3>
-                            ${price}
-                            <p>${s.desc}</p>
-                        </div>
-                        <div class="service-order">
-                            <h4>Контакты и запись:</h4>
-                            ${extra} ${tg} ${phone}
-                        </div>
-                    </div>`;
+            // Если текущая активная вкладка пустая или исчезла, берем первую доступную
+            if (!activeServiceSubtab || !categories.has(activeServiceSubtab)) {
+                activeServiceSubtab = Array.from(categories)[0] || "Химчистка";
+            }
+
+            let subtabsHtml = '';
+            categories.forEach(cat => {
+                let activeClass = cat === activeServiceSubtab ? 'active' : '';
+                subtabsHtml += `<button class="sub-tab-btn ${activeClass}" onclick="switchServiceSubtab('${cat}', this)">${cat}</button>`;
             });
-            document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b;">Услуг пока нет</p>';
+            document.getElementById('services-subtabs-container').innerHTML = subtabsHtml;
 
+            renderServicesList();
+
+            // Вывод друзей
             const titles = ["Администрация", "Партнер APG", "Друг сообщества", "VIP Клуб"];
             let groupedHtml = '';
 
@@ -302,6 +343,34 @@
             document.getElementById('friends-grouped-container').innerHTML = groupedHtml || '<p style="text-align:center; color:#64748b;">Список друзей пуст</p>';
         }
 
+        function renderServicesList() {
+            const services = JSON.parse(localStorage.getItem('apg_services_db')) || [];
+            // Фильтруем услуги только для текущей подкатегории (внутренней вкладки)
+            const filteredServices = services.filter(s => (s.category || "Химчистка") === activeServiceSubtab);
+
+            let servicesHtml = '';
+            filteredServices.forEach((s, index) => {
+                let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
+                let extra = s.extraBtn ? `<a href="${s.extraBtn.link}" target="_blank" class="tg-button prestige-btn">${s.extraBtn.text}</a>` : '';
+                let tg = s.tg ? `<a href="https://t.me/${s.tg.replace('@','')}" target="_blank" class="tg-button blue-btn">Написать ${s.tg}</a>` : '';
+                let phone = s.phone ? `<a href="tel:${s.phone}" class="phone-button">Позвонить ${s.phone}</a>` : '';
+
+                servicesHtml += `
+                    <div class="service-card ${index % 2 !== 0 ? 'tuning-card' : ''}">
+                        <div class="service-details">
+                            <h3>№${index + 1}. ${s.title}</h3>
+                            ${price}
+                            <p>${s.desc}</p>
+                        </div>
+                        <div class="service-order">
+                            <h4>Контакты и запись:</h4>
+                            ${extra} ${tg} ${phone}
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">В этой вкладке пока нет услуг</p>';
+        }
+
         function addNewFriend() {
             let tg = document.getElementById('new-friend-tg').value.trim();
             let title = document.getElementById('new-friend-title').value;
@@ -321,12 +390,21 @@
             const desc = document.getElementById('new-service-desc').value.trim();
             let tg = document.getElementById('new-service-tg').value.trim();
             const phone = document.getElementById('new-service-phone').value.trim();
+            
+            let categorySelect = document.getElementById('new-service-category').value;
+            let category = categorySelect;
+            
+            if (categorySelect === '__CUSTOM__') {
+                const customCat = document.getElementById('new-service-custom-category').value.trim();
+                if(!customCat) return alert('Введите название для новой вкладки!');
+                category = customCat;
+            }
 
             if(!title || !desc) return alert('Заполните название и описание!');
             if(tg && !tg.startsWith('@')) tg = '@' + tg;
 
             let db = JSON.parse(localStorage.getItem('apg_services_db')) || [];
-            db.push({ title, price, desc, tg, phone });
+            db.push({ title, category, price, desc, tg, phone });
             localStorage.setItem('apg_services_db', JSON.stringify(db));
             
             document.getElementById('new-service-title').value = '';
@@ -334,7 +412,12 @@
             document.getElementById('new-service-desc').value = '';
             document.getElementById('new-service-tg').value = '';
             document.getElementById('new-service-phone').value = '';
-            renderData(); renderAdminControls();
+            document.getElementById('new-service-custom-category').value = '';
+            
+            activeServiceSubtab = category; // Автоматически переключаем на вкладку добавленной услуги
+            renderData();
+            updateAdminCategorySelect();
+            renderAdminControls();
         }
 
         function removeFriend(index) {
@@ -348,7 +431,7 @@
             let db = JSON.parse(localStorage.getItem('apg_services_db'));
             db.splice(index, 1);
             localStorage.setItem('apg_services_db', JSON.stringify(db));
-            renderData(); renderAdminControls();
+            renderData(); updateAdminCategorySelect(); renderAdminControls();
         }
 
         function renderAdminControls() {
@@ -365,8 +448,9 @@
 
             html += '<p style="font-size:0.9rem; color:#94a3b8; margin-top:10px; margin-bottom:5px;">Услуги:</p>';
             services.forEach((s, i) => {
+                let catBadge = s.category ? ` [${s.category}]` : ' [Химчистка]';
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>№${i+1}. ${s.title.substring(0,25)}...</span>
+                    <span>№${i+1}.${catBadge} ${s.title.substring(0,20)}...</span>
                     <button onclick="removeService(${i})" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
                 </div>`;
             });
@@ -376,7 +460,14 @@
         function downloadUpdatedCode() {
             const currentFriends = localStorage.getItem('apg_friends_db');
             const currentServices = localStorage.getItem('apg_services_db');
+            
+            // Генерируем новый случайный токен версии, чтобы сбросить старый локальный кэш у всех пользователей
+            const newVersionToken = "apg_db_v_" + Math.round(Math.random() * 10000000);
+
             let pageCode = document.documentElement.outerHTML;
+            
+            // Подменяем старые массивы и версию на актуальные
+            pageCode = pageCode.replace(/let currentVersionToken = "[\s\S]*?";/, `let currentVersionToken = "${newVersionToken}";`);
             pageCode = pageCode.replace(/let staticFriends = \[[\s\S]*?\];/, `let staticFriends = ${currentFriends};`);
             pageCode = pageCode.replace(/let staticServices = \[[\s\S]*?\];/, `let staticServices = ${currentServices};`);
 
