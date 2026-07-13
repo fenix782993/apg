@@ -29,6 +29,11 @@
         /* Элементы управления редактированием */
         .edit-badge { background: #e11d48 !important; }
         .cancel-edit-btn { background: #475569 !important; margin-top: 5px; }
+        
+        /* Стили для кнопки выбора файла */
+        .file-input-wrapper { margin-bottom: 12px; }
+        .file-input-label { display: block; padding: 10px; background: #1e293b; border: 1px dashed rgba(255,255,255,0.2); text-align: center; border-radius: 8px; cursor: pointer; color: #cbd5e1; font-size: 0.9rem; transition: background 0.2s; }
+        .file-input-label:hover { background: #334155; border-color: #00d2ff; }
     </style>
 </head>
 <body>
@@ -189,10 +194,13 @@
                 <h3>Панель управления APG (Live База)</h3>
                 
                 <div class="admin-subform">
-                    <h4>Добавить фото в галерею APG</h4>
-                    <input type="text" id="new-photo-url" placeholder="Ссылка на фотографию (https://...)">
+                    <h4>Добавить фото в галерею APG (JPG/PNG)</h4>
+                    <div class="file-input-wrapper">
+                        <label for="new-photo-file" class="file-input-label" id="file-label-text">📁 Выбрать файл изображения</label>
+                        <input type="file" id="new-photo-file" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="handleFileSelect(this)">
+                    </div>
                     <input type="text" id="new-photo-desc" placeholder="Описание / Подпись (например: Сходка 2026)">
-                    <button class="tg-button blue-btn" onclick="addNewPhoto()">Добавить в галерею</button>
+                    <button class="tg-button blue-btn" id="upload-photo-btn" onclick="addNewPhoto()">Добавить в галерею</button>
                 </div>
 
                 <div class="admin-subform">
@@ -231,22 +239,20 @@
         let globalPhotos = [];
         
         let selectedReviewStars = 5;
-        let editingServiceId = null; // Хранит ID редактируемой услуги
+        let editingServiceId = null; 
+        let encodedBase64Photo = ""; // Переменная для хранения кода выбранной картинки
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
             try {
-                // Загрузка услуг
                 const resServices = await fetch(`${FIREBASE_URL}services.json`);
                 const dataServices = await resServices.json();
                 globalServices = dataServices ? Object.keys(dataServices).map(key => ({...dataServices[key], firebaseId: key})) : [];
 
-                // Загрузка отзывов
                 const resReviews = await fetch(`${FIREBASE_URL}reviews.json`);
                 const dataReviews = await resReviews.json();
                 globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).reverse() : [];
 
-                // Загрузка галереи
                 const resPhotos = await fetch(`${FIREBASE_URL}gallery.json`);
                 const dataPhotos = await resPhotos.json();
                 globalPhotos = dataPhotos ? Object.keys(dataPhotos).map(key => ({...dataPhotos[key], firebaseId: key})).reverse() : [];
@@ -350,19 +356,17 @@
             });
             document.getElementById('reviews-list-container').innerHTML = reviewsHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">Отзывов пока нет. Будьте первым!</p>';
 
-            // Вывод галереи (ровно по 2 штуки в ряд благодаря .gallery-grid)
+            // Вывод галереи (по 2 штуки в ряд)
             let galleryHtml = '';
             globalPhotos.forEach((p) => {
                 galleryHtml += `
                     <div class="gallery-item">
-                        <img src="${p.url}" alt="${p.desc || 'Фото APG'}" onerror="this.src='https://placehold.co/400x300/1e293b/00d2ff?text= Ошибка загрузки фото'">
+                        <img src="${p.url}" alt="${p.desc || 'Фото APG'}" onerror="this.src='https://placehold.co/400x300/1e293b/00d2ff?text=Ошибка'">
                         ${p.desc ? `<div class="photo-caption">${p.desc}</div>` : ''}
                     </div>`;
             });
             document.getElementById('gallery-images-container').innerHTML = galleryHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">В галерее пока нет фотографий</p>';
         }
-
-        // --- ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЕЙ ---
 
         async function sendUserReview() {
             const author = document.getElementById('review-author-input').value.trim();
@@ -373,17 +377,9 @@
             const options = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
             const dateStr = new Date().toLocaleDateString('ru-RU', options);
 
-            const reviewData = {
-                author: author,
-                text: text,
-                stars: selectedReviewStars,
-                date: dateStr
-            };
+            const reviewData = { author, text, stars: selectedReviewStars, date: dateStr };
 
-            await fetch(`${FIREBASE_URL}reviews.json`, {
-                method: 'POST',
-                body: JSON.stringify(reviewData)
-            });
+            await fetch(`${FIREBASE_URL}reviews.json`, { method: 'POST', body: JSON.stringify(reviewData) });
 
             if(TG_BOT_TOKEN && TG_CHAT_ID) {
                 let starsLine = '⭐'.repeat(selectedReviewStars);
@@ -392,7 +388,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' })
-                }).catch(e => console.log('Ошибка отправки в TG:', e));
+                }).catch(e => console.log('Ошибка TG:', e));
             }
 
             document.getElementById('review-author-input').value = '';
@@ -402,23 +398,54 @@
             alert('Спасибо! Ваш отзыв добавлен на стену.');
         }
 
-        // --- ДЕЙСТВИЯ АДМИНИСТРАТОРА ---
+        // --- ОБРАБОТКА ВЫБРАННОГО ФАЙЛА ИЗОБРАЖЕНИЯ ---
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
 
-        // Добавление фото в галерею
+            // Проверка размера файла (чтобы база не перегружалась, лучше загружать до 2.5 МБ)
+            if (file.size > 2621440) {
+                alert("Файл слишком большой! Пожалуйста, выберите фото размером меньше 2.5 МБ.");
+                input.value = "";
+                return;
+            }
+
+            document.getElementById('file-label-text').innerText = `✅ Выбран: ${file.name.substring(0, 20)}...`;
+
+            // Читаем файл и кодируем в строку Base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                encodedBase64Photo = e.target.result; // Сюда падает готовый код картинки
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Сохранение фото в Firebase
         async function addNewPhoto() {
-            const url = document.getElementById('new-photo-url').value.trim();
             const desc = document.getElementById('new-photo-desc').value.trim();
 
-            if(!url) return alert('Укажите ссылку на фото!');
+            if(!encodedBase64Photo) return alert('Пожалуйста, выберите файл фотографии через кнопку!');
+
+            const btn = document.getElementById('upload-photo-btn');
+            btn.innerText = "Загрузка...";
+            btn.disabled = true;
 
             await fetch(`${FIREBASE_URL}gallery.json`, {
                 method: 'POST',
-                body: JSON.stringify({ url, desc })
+                body: JSON.stringify({ url: encodedBase64Photo, desc: desc })
             });
 
-            document.getElementById('new-photo-url').value = '';
+            // Сброс полей
+            encodedBase64Photo = "";
+            document.getElementById('new-photo-file').value = "";
+            document.getElementById('file-label-text').innerText = "📁 Выбрать файл изображения";
             document.getElementById('new-photo-desc').value = '';
+            
+            btn.innerText = "Добавить в галерею";
+            btn.disabled = false;
+            
             loadFirebaseData();
+            alert('Фото успешно добавлено в галерею!');
         }
 
         // Добавление или Изменение услуги
@@ -435,58 +462,38 @@
             const serviceData = { title, price, desc, tg, phone };
 
             if (editingServiceId) {
-                // РЕЖИМ РЕДАКТИРОВАНИЯ: Обновляем существующую запись
-                await fetch(`${FIREBASE_URL}services/${editingServiceId}.json`, {
-                    method: 'PUT',
-                    body: JSON.stringify(serviceData)
-                });
+                await fetch(`${FIREBASE_URL}services/${editingServiceId}.json`, { method: 'PUT', body: JSON.stringify(serviceData) });
                 editingServiceId = null;
                 alert('Услуга успешно обновлена!');
             } else {
-                // РЕЖИМ СОЗДАНИЯ: Создаем новую услугу
-                await fetch(`${FIREBASE_URL}services.json`, {
-                    method: 'POST',
-                    body: JSON.stringify(serviceData)
-                });
+                await fetch(`${FIREBASE_URL}services.json`, { method: 'POST', body: JSON.stringify(serviceData) });
             }
             
-            // Сбрасываем форму
-            document.getElementById('new-service-title').value = '';
-            document.getElementById('new-service-price').value = '';
-            document.getElementById('new-service-desc').value = '';
-            document.getElementById('new-service-tg').value = '';
-            document.getElementById('new-service-phone').value = '';
-            
-            cancelServiceEdit(); // Возвращаем форму в исходный вид
+            cancelServiceEdit();
             loadFirebaseData();
         }
 
-        // Запуск процесса редактирования услуги
         function startEditService(firebaseId) {
             const service = globalServices.find(s => s.firebaseId === firebaseId);
             if(!service) return;
 
             editingServiceId = firebaseId;
 
-            // Заполняем форму данными выбранной услуги
             document.getElementById('new-service-title').value = service.title || '';
             document.getElementById('new-service-price').value = service.price || '';
             document.getElementById('new-service-desc').value = service.desc || '';
             document.getElementById('new-service-tg').value = service.tg || '';
             document.getElementById('new-service-phone').value = service.phone || '';
 
-            // Меняем заголовки и кнопки на форме
             document.getElementById('service-form-title').innerText = '✍️ Редактировать услугу';
             document.getElementById('service-form-title').style.color = '#e11d48';
             document.getElementById('service-submit-btn').innerText = 'Сохранить изменения';
             document.getElementById('service-submit-btn').classList.add('edit-badge');
             document.getElementById('service-cancel-btn').style.display = 'block';
 
-            // Прокручиваем модалку вверх к форме, чтобы админ сразу увидел её
             document.getElementById('admin-panel-step').scrollTop = 0;
         }
 
-        // Отмена редактирования услуги
         function cancelServiceEdit() {
             editingServiceId = null;
             document.getElementById('new-service-title').value = '';
@@ -502,7 +509,6 @@
             document.getElementById('service-cancel-btn').style.display = 'none';
         }
 
-        // Удаление элементов
         async function removePhoto(firebaseId) {
             if(!confirm('Удалить эту фотографию из галереи?')) return;
             await fetch(`${FIREBASE_URL}gallery/${firebaseId}.json`, { method: 'DELETE' });
@@ -522,18 +528,15 @@
             loadFirebaseData();
         }
 
-        // Отрисовка списков управления в админке
         function renderAdminControls() {
-            // Управление фото
             let html = '<p style="font-size:0.9rem; color:#00d2ff; margin-bottom:5px;">Галерея APG:</p>';
             globalPhotos.forEach((p) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>🖼️ ${p.desc ? p.desc.substring(0, 20) : 'Без подписи'}</span>
+                    <span>🖼️ ${p.desc ? p.desc.substring(0, 20) : 'Фото без названия'}</span>
                     <button onclick="removePhoto('${p.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
                 </div>`;
             });
 
-            // Управление услугами (Удаление + Редактирование!)
             html += '<p style="font-size:0.9rem; color:#22c55e; margin-top:15px; margin-bottom:5px;">Все услуги в списке:</p>';
             globalServices.forEach((s, i) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
@@ -545,7 +548,6 @@
                 </div>`;
             });
 
-            // Управление отзывами
             html += '<p style="font-size:0.9rem; color:#f59e0b; margin-top:15px; margin-bottom:5px;">Модерация отзывов:</p>';
             globalReviews.forEach((r) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
