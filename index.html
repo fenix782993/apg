@@ -53,9 +53,9 @@
     <div class="navigation-tabs">
         <button class="tab-btn active" onclick="switchTab('chats-tab', this)">Чаты и ресурсы</button>
         <button class="tab-btn" onclick="switchTab('shop-tab', this)">Магазин запчастей</button>
-        <button class="tab-btn" onclick="switchTab('services-tab', this)" id="services-tab-btn">Услуги</button>
-        <button class="tab-btn" onclick="switchTab('reviews-tab', this)" id="reviews-tab-btn">Отзывы</button>
-        <button class="tab-btn" onclick="switchTab('gallery-tab', this)" id="gallery-tab-btn">Галерея APG</button>
+        <button class="tab-btn" onclick="switchTab('services-tab', this)" id="services-tab-btn">Услуги (...)</button>
+        <button class="tab-btn" onclick="switchTab('reviews-tab', this)" id="reviews-tab-btn">Отзывы (...)</button>
+        <button class="tab-btn" onclick="switchTab('gallery-tab', this)" id="gallery-tab-btn">Галерея APG (...)</button>
     </div>
 
     <main class="container">
@@ -140,7 +140,9 @@
         <div id="services-tab" class="tab-content">
             <section class="section-block service-section">
                 <h2>Услуги сообщества</h2>
-                <div class="services-vertical-list" id="services-list-container"></div>
+                <div class="services-vertical-list" id="services-list-container">
+                    <p style="text-align:center; color:#64748b; padding: 20px;">Загрузка услуг сообщества...</p>
+                </div>
             </section>
         </div>
 
@@ -165,7 +167,9 @@
                     <button class="tg-button blue-btn" onclick="sendUserReview()">Отправить на стену</button>
                 </div>
 
-                <div class="reviews-container" id="reviews-list-container"></div>
+                <div class="reviews-container" id="reviews-list-container">
+                    <p style="text-align:center; color:#64748b; padding: 20px;">Загрузка отзывов...</p>
+                </div>
             </section>
         </div>
 
@@ -173,7 +177,9 @@
             <section class="section-block gallery-section">
                 <h2>Галерея Auto Partners Group</h2>
                 <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:10px;">Фотографии автомобилей, сходок и ярких моментов нашей банды!</p>
-                <div class="gallery-grid" id="gallery-images-container"></div>
+                <div class="gallery-grid" id="gallery-images-container">
+                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка галереи APG...</p>
+                </div>
             </section>
         </div>
 
@@ -230,7 +236,6 @@
     <script>
         const FIREBASE_URL = "https://apg-site-56d91-default-rtdb.firebaseio.com/";
 
-        // ЕСЛИ ЗАХОЧЕШЬ ВКЛЮЧИТЬ ТЕЛЕГРАМ-БОТА В БУДУЩЕМ, ЗАПОЛНИ ЭТИ ПОЛЯ:
         const TG_BOT_TOKEN = ""; 
         const TG_CHAT_ID = ""; 
 
@@ -240,7 +245,8 @@
         
         let selectedReviewStars = 5;
         let editingServiceId = null; 
-        let selectedFilesQueue = []; // Очередь файлов для пакетной загрузки
+        let selectedFilesQueue = []; 
+        let isFirstLoadDone = false; // Флаг для предотвращения показа 0 элементов при входе
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
@@ -257,6 +263,7 @@
                 const dataPhotos = await resPhotos.json();
                 globalPhotos = dataPhotos ? Object.keys(dataPhotos).map(key => ({...dataPhotos[key], firebaseId: key})).reverse() : [];
 
+                isFirstLoadDone = true; // Данные загружены с сервера
                 renderData();
                 if(document.getElementById('adminModal').style.display === 'flex') {
                     renderAdminControls();
@@ -266,9 +273,11 @@
             }
         }
 
-        setInterval(loadFirebaseData, 3000);
+        // Мгновенный вызов при инициализации скрипта
+        loadFirebaseData();
+        setInterval(loadFirebaseData, 4000);
+
         window.onload = () => {
-            loadFirebaseData();
             setReviewStars(5);
         };
 
@@ -313,6 +322,12 @@
         }
 
         function renderData() {
+            // Если первая загрузка еще не завершена, не отображаем пустую разметку
+            if (!isFirstLoadDone) {
+                return; 
+            }
+
+            // Обновляем счетчики на кнопках вкладок только после успешной загрузки
             document.getElementById('services-tab-btn').innerText = `Услуги (${globalServices.length})`;
             document.getElementById('reviews-tab-btn').innerText = `Отзывы (${globalReviews.length})`;
             document.getElementById('gallery-tab-btn').innerText = `Галерея (${globalPhotos.length})`;
@@ -407,7 +422,7 @@
             let validFilesCount = 0;
 
             for (let i = 0; i < files.length; i++) {
-                if (files[i].size <= 2621440) { // Лимит 2.5 МБ на файл для Realtime DB
+                if (files[i].size <= 2621440) { // Лимит 2.5 МБ на один файл
                     selectedFilesQueue.push(files[i]);
                     validFilesCount++;
                 }
