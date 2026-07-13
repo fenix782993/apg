@@ -207,6 +207,8 @@
                     </div>
                     <input type="text" id="new-photo-desc" placeholder="Общее описание для этой пачки фото (необязательно)">
                     <button class="tg-button blue-btn" id="upload-photo-btn" onclick="uploadAllSelectedPhotos()">Добавить в галерею</button>
+                    
+                    <button class="tg-button" onclick="clearEntireGallery()" style="background: #e11d48; margin-top: 15px; font-weight: bold;">🚨 Удалить ВСЮ галерею</button>
                 </div>
 
                 <div class="admin-subform">
@@ -246,12 +248,12 @@
         let selectedReviewStars = 5;
         let editingServiceId = null; 
         let selectedFilesQueue = []; 
-        let isFirstLoadDone = false; // Защитный флаг загрузки
+        let isFirstLoadDone = false; // Защитный флаг от отображения "0"
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
             try {
-                // Параллельный запрос к трем веткам БД
+                // Параллельный асинхронный запрос ко всем веткам БД
                 const [resServices, resReviews, resPhotos] = await Promise.all([
                     fetch(`${FIREBASE_URL}services.json`),
                     fetch(`${FIREBASE_URL}reviews.json`),
@@ -268,7 +270,7 @@
                 globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).reverse() : [];
                 globalPhotos = dataPhotos ? Object.keys(dataPhotos).map(key => ({...dataPhotos[key], firebaseId: key})).reverse() : [];
 
-                isFirstLoadDone = true; // Теперь данные в памяти, можно рисовать!
+                isFirstLoadDone = true; // Снимаем блокировку отрисовки
                 renderData();
                 if(document.getElementById('adminModal').style.display === 'flex') {
                     renderAdminControls();
@@ -278,7 +280,7 @@
             }
         }
 
-        // Запуск загрузки моментально при разборе скрипта браузером
+        // Запускаем загрузку немедленно
         loadFirebaseData();
         setInterval(loadFirebaseData, 4000);
 
@@ -326,13 +328,13 @@
             }
         }
 
-        // Рендеринг данных (Срабатывает только ПОСЛЕ того как isFirstLoadDone === true)
+        // Отрисовка контента на странице
         function renderData() {
             if (!isFirstLoadDone) {
-                return; // Если базы еще не ответили, вообще ничего не рисуем (висят дефолтные загрузчики)
+                return; // Если база еще не ответила на первый запрос — держим заглушки
             }
 
-            // Заменяем индикаторы (...) на реальные цифры из базы
+            // Выводим реальные цифры
             document.getElementById('services-tab-btn').innerText = `Услуги (${globalServices.length})`;
             document.getElementById('reviews-tab-btn').innerText = `Отзывы (${globalReviews.length})`;
             document.getElementById('gallery-tab-btn').innerText = `Галерея APG (${globalPhotos.length})`;
@@ -418,7 +420,7 @@
             alert('Спасибо! Ваш отзыв добавлен на стену.');
         }
 
-        // Выбор файлов для галереи
+        // Выбор файлов для пакетной загрузки
         function handleMultipleFilesSelect(input) {
             const files = input.files;
             if (!files || files.length === 0) return;
@@ -426,7 +428,7 @@
             document.getElementById('file-label-text').innerText = `✅ Выбрано файлов: ${files.length}. Готовы к авто-сжатию.`;
         }
 
-        // Функция сжатия изображений на стороне клиента (FullHD, Качество 0.7)
+        // Функция сжатия картинок на клиенте перед заливкой
         function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -438,7 +440,7 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-                        const MAX_WIDTH = 1400; 
+                        const MAX_WIDTH = 1400; // Оптимальная ширина под девайсы
 
                         if (width > MAX_WIDTH) {
                             height *= MAX_WIDTH / width;
@@ -450,14 +452,14 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // Качество 70%
                         resolve(compressedBase64);
                     };
                 };
             });
         }
 
-        // Пакетная отправка картинок в Firebase
+        // Пакетная отправка сжатых картинок
         async function uploadAllSelectedPhotos() {
             if (selectedFilesQueue.length === 0) {
                 return alert('Пожалуйста, выберите хотя бы один файл!');
@@ -493,6 +495,24 @@
             
             loadFirebaseData();
             alert('Все фотографии успешно загружены!');
+        }
+
+        // Функция для полной очистки галереи
+        async function clearEntireGallery() {
+            const firstConfirm = confirm('⚠️ ВНИМАНИЕ! Вы уверены, что хотите полностью очистить всю галерею? Это действие нельзя отменить!');
+            if (!firstConfirm) return;
+
+            const secondConfirm = confirm('🔥 ПОДТВЕРДИТЕ ЕЩЕ РАЗ: Точно удалить абсолютно ВСЕ фотографии из галереи APG?');
+            if (!secondConfirm) return;
+
+            try {
+                await fetch(`${FIREBASE_URL}gallery.json`, { method: 'DELETE' });
+                alert('Галерея успешно очищена!');
+                loadFirebaseData();
+            } catch (e) {
+                console.error("Ошибка при очистке галереи: ", e);
+                alert('Произошла ошибка при удалении!');
+            }
         }
 
         // Добавление или Изменение услуги
