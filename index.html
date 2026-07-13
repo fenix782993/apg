@@ -6,7 +6,7 @@
     <title>Auto Partners Group | APG</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Дополнительные стили для отзывов и звезд, чтобы не менять style.css */
+        /* Стили для отзывов и звезд */
         .rating-select { display: flex; gap: 8px; margin-bottom: 12px; font-size: 1.5rem; }
         .rating-select span { cursor: pointer; color: #475569; transition: color 0.2s; }
         .rating-select span.active { color: #f59e0b; text-shadow: 0 0 10px rgba(245,158,11,0.5); }
@@ -18,6 +18,17 @@
         .review-text { color: #cbd5e1; line-height: 1.4; font-size: 0.95rem; }
         .reviews-container { max-width: 800px; margin: 0 auto; }
         .write-review-block { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(0, 210, 255, 0.2); padding: 20px; border-radius: 16px; margin-bottom: 25px; }
+
+        /* Стили для галереи APG (Сетка: ровно 2 фото в ряд) */
+        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .gallery-item { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; aspect-ratio: 4/3; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; display: block; }
+        .gallery-item:hover img { transform: scale(1.05); }
+        .gallery-item .photo-caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 10px; font-size: 0.9rem; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+
+        /* Элементы управления редактированием */
+        .edit-badge { background: #e11d48 !important; }
+        .cancel-edit-btn { background: #475569 !important; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -39,7 +50,7 @@
         <button class="tab-btn" onclick="switchTab('shop-tab', this)">Магазин запчастей</button>
         <button class="tab-btn" onclick="switchTab('services-tab', this)" id="services-tab-btn">Услуги</button>
         <button class="tab-btn" onclick="switchTab('reviews-tab', this)" id="reviews-tab-btn">Отзывы</button>
-        <button class="tab-btn" onclick="switchTab('friends-tab', this)">Наши друзья</button>
+        <button class="tab-btn" onclick="switchTab('gallery-tab', this)" id="gallery-tab-btn">Галерея APG</button>
     </div>
 
     <main class="container">
@@ -153,10 +164,11 @@
             </section>
         </div>
 
-        <div id="friends-tab" class="tab-content">
-            <section class="section-block friends-section">
-                <h2>Наши друзья и партнеры</h2>
-                <div id="friends-grouped-container"></div>
+        <div id="gallery-tab" class="tab-content">
+            <section class="section-block gallery-section">
+                <h2>Галерея Auto Partners Group</h2>
+                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:10px;">Фотографии автомобилей, сходок и ярких моментов нашей банды!</p>
+                <div class="gallery-grid" id="gallery-images-container"></div>
             </section>
         </div>
 
@@ -177,25 +189,22 @@
                 <h3>Панель управления APG (Live База)</h3>
                 
                 <div class="admin-subform">
-                    <h4>Добавить друга</h4>
-                    <input type="text" id="new-friend-tg" placeholder="Telegram Юзернейм (@username)">
-                    <select id="new-friend-title">
-                        <option value="Администрация">Администрация</option>
-                        <option value="Партнер APG">Партнер APG</option>
-                        <option value="Друг сообщества">Друг сообщества</option>
-                        <option value="VIP Клуб">VIP Клуб</option>
-                    </select>
-                    <button class="tg-button blue-btn" onclick="addNewFriend()">Добавить друга</button>
+                    <h4>Добавить фото в галерею APG</h4>
+                    <input type="text" id="new-photo-url" placeholder="Ссылка на фотографию (https://...)">
+                    <input type="text" id="new-photo-desc" placeholder="Описание / Подпись (например: Сходка 2026)">
+                    <button class="tg-button blue-btn" onclick="addNewPhoto()">Добавить в галерею</button>
                 </div>
 
                 <div class="admin-subform">
-                    <h4>Добавить услугу в общий список</h4>
+                    <h4 id="service-form-title">Добавить услугу в общий список</h4>
                     <input type="text" id="new-service-title" placeholder="Название услуги">
                     <input type="text" id="new-service-price" placeholder="Цена (например: 4000 рублей)">
                     <textarea id="new-service-desc" placeholder="Описание услуги..."></textarea>
                     <input type="text" id="new-service-tg" placeholder="Telegram мастера">
                     <input type="text" id="new-service-phone" placeholder="Телефон">
-                    <button class="tg-button" onclick="addNewService()">Добавить услугу</button>
+                    
+                    <button class="tg-button" id="service-submit-btn" onclick="addNewService()">Добавить услугу</button>
+                    <button class="tg-button cancel-edit-btn" id="service-cancel-btn" onclick="cancelServiceEdit()" style="display:none;">Отменить редактирование</button>
                 </div>
 
                 <div class="admin-subform">
@@ -217,25 +226,30 @@
         const TG_BOT_TOKEN = ""; 
         const TG_CHAT_ID = ""; 
 
-        let globalFriends = [];
         let globalServices = [];
         let globalReviews = [];
+        let globalPhotos = [];
+        
         let selectedReviewStars = 5;
+        let editingServiceId = null; // Хранит ID редактируемой услуги
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
             try {
-                const resFriends = await fetch(`${FIREBASE_URL}friends.json`);
-                const dataFriends = await resFriends.json();
-                globalFriends = dataFriends ? Object.keys(dataFriends).map(key => ({...dataFriends[key], firebaseId: key})) : [];
-
+                // Загрузка услуг
                 const resServices = await fetch(`${FIREBASE_URL}services.json`);
                 const dataServices = await resServices.json();
                 globalServices = dataServices ? Object.keys(dataServices).map(key => ({...dataServices[key], firebaseId: key})) : [];
 
+                // Загрузка отзывов
                 const resReviews = await fetch(`${FIREBASE_URL}reviews.json`);
                 const dataReviews = await resReviews.json();
                 globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).reverse() : [];
+
+                // Загрузка галереи
+                const resPhotos = await fetch(`${FIREBASE_URL}gallery.json`);
+                const dataPhotos = await resPhotos.json();
+                globalPhotos = dataPhotos ? Object.keys(dataPhotos).map(key => ({...dataPhotos[key], firebaseId: key})).reverse() : [];
 
                 renderData();
                 if(document.getElementById('adminModal').style.display === 'flex') {
@@ -249,7 +263,7 @@
         setInterval(loadFirebaseData, 3000);
         window.onload = () => {
             loadFirebaseData();
-            setReviewStars(5); // По умолчанию 5 звезд при старте
+            setReviewStars(5);
         };
 
         function switchTab(tabId, element) {
@@ -280,6 +294,7 @@
             document.getElementById('adminModal').style.display = 'none'; 
             document.getElementById('secret-code-input').value = ''; 
             document.getElementById('auth-error-msg').innerText = ''; 
+            cancelServiceEdit();
         }
         
         function checkSecretCode() {
@@ -294,6 +309,7 @@
         function renderData() {
             document.getElementById('services-tab-btn').innerText = `Услуги (${globalServices.length})`;
             document.getElementById('reviews-tab-btn').innerText = `Отзывы (${globalReviews.length})`;
+            document.getElementById('gallery-tab-btn').innerText = `Галерея (${globalPhotos.length})`;
 
             // Вывод услуг
             let servicesHtml = '';
@@ -334,34 +350,19 @@
             });
             document.getElementById('reviews-list-container').innerHTML = reviewsHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">Отзывов пока нет. Будьте первым!</p>';
 
-            // Вывод друзей
-            const titles = ["Администрация", "Партнер APG", "Друг сообщества", "VIP Клуб"];
-            let groupedHtml = '';
-
-            titles.forEach(title => {
-                const filtered = globalFriends.filter(f => f.title === title);
-                if (filtered.length > 0) {
-                    let badgeClass = title === 'Партнер APG' ? 'partner' : (title === 'Администрация' ? 'admin-status' : (title === 'VIP Клуб' ? 'vip-status' : 'friend-club'));
-                    
-                    groupedHtml += `<div class="friend-group-block">
-                        <h3 class="group-title-label ${badgeClass}">${title}</h3>
-                        <div class="friends-grid">`;
-                    
-                    filtered.forEach(f => {
-                        groupedHtml += `
-                            <a href="https://t.me/${f.tg.replace('@','')}" target="_blank" class="friend-card">
-                                <div class="friend-avatar">👤</div>
-                                <div class="friend-info">
-                                    <h3>${f.tg}</h3>
-                                    <p class="status-badge ${badgeClass}">${f.title}</p>
-                                </div>
-                            </a>`;
-                    });
-                    groupedHtml += `</div></div>`;
-                }
+            // Вывод галереи (ровно по 2 штуки в ряд благодаря .gallery-grid)
+            let galleryHtml = '';
+            globalPhotos.forEach((p) => {
+                galleryHtml += `
+                    <div class="gallery-item">
+                        <img src="${p.url}" alt="${p.desc || 'Фото APG'}" onerror="this.src='https://placehold.co/400x300/1e293b/00d2ff?text= Ошибка загрузки фото'">
+                        ${p.desc ? `<div class="photo-caption">${p.desc}</div>` : ''}
+                    </div>`;
             });
-            document.getElementById('friends-grouped-container').innerHTML = groupedHtml || '<p style="text-align:center; color:#64748b;">Список друзей пуст</p>';
+            document.getElementById('gallery-images-container').innerHTML = galleryHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">В галерее пока нет фотографий</p>';
         }
+
+        // --- ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЕЙ ---
 
         async function sendUserReview() {
             const author = document.getElementById('review-author-input').value.trim();
@@ -384,7 +385,6 @@
                 body: JSON.stringify(reviewData)
             });
 
-            // Отправка ботом в Телеграм (если настроен)
             if(TG_BOT_TOKEN && TG_CHAT_ID) {
                 let starsLine = '⭐'.repeat(selectedReviewStars);
                 let msg = `📣 *Новый отзыв на сайте APG!*\n\n👤 *От кого:* ${author}\n${starsLine}\n💬 *Текст:* ${text}`;
@@ -402,21 +402,26 @@
             alert('Спасибо! Ваш отзыв добавлен на стену.');
         }
 
-        async function addNewFriend() {
-            let tg = document.getElementById('new-friend-tg').value.trim();
-            let title = document.getElementById('new-friend-title').value;
-            if(!tg) return alert('Укажите юзернейм!');
-            if(!tg.startsWith('@')) tg = '@' + tg;
+        // --- ДЕЙСТВИЯ АДМИНИСТРАТОРА ---
 
-            await fetch(`${FIREBASE_URL}friends.json`, {
+        // Добавление фото в галерею
+        async function addNewPhoto() {
+            const url = document.getElementById('new-photo-url').value.trim();
+            const desc = document.getElementById('new-photo-desc').value.trim();
+
+            if(!url) return alert('Укажите ссылку на фото!');
+
+            await fetch(`${FIREBASE_URL}gallery.json`, {
                 method: 'POST',
-                body: JSON.stringify({ tg, title })
+                body: JSON.stringify({ url, desc })
             });
 
-            document.getElementById('new-friend-tg').value = '';
+            document.getElementById('new-photo-url').value = '';
+            document.getElementById('new-photo-desc').value = '';
             loadFirebaseData();
         }
 
+        // Добавление или Изменение услуги
         async function addNewService() {
             const title = document.getElementById('new-service-title').value.trim();
             const price = document.getElementById('new-service-price').value.trim();
@@ -427,27 +432,87 @@
             if(!title || !desc) return alert('Заполните название и описание!');
             if(tg && !tg.startsWith('@')) tg = '@' + tg;
 
-            await fetch(`${FIREBASE_URL}services.json`, {
-                method: 'POST',
-                body: JSON.stringify({ title, price, desc, tg, phone })
-            });
+            const serviceData = { title, price, desc, tg, phone };
+
+            if (editingServiceId) {
+                // РЕЖИМ РЕДАКТИРОВАНИЯ: Обновляем существующую запись
+                await fetch(`${FIREBASE_URL}services/${editingServiceId}.json`, {
+                    method: 'PUT',
+                    body: JSON.stringify(serviceData)
+                });
+                editingServiceId = null;
+                alert('Услуга успешно обновлена!');
+            } else {
+                // РЕЖИМ СОЗДАНИЯ: Создаем новую услугу
+                await fetch(`${FIREBASE_URL}services.json`, {
+                    method: 'POST',
+                    body: JSON.stringify(serviceData)
+                });
+            }
             
+            // Сбрасываем форму
             document.getElementById('new-service-title').value = '';
             document.getElementById('new-service-price').value = '';
             document.getElementById('new-service-desc').value = '';
             document.getElementById('new-service-tg').value = '';
             document.getElementById('new-service-phone').value = '';
             
+            cancelServiceEdit(); // Возвращаем форму в исходный вид
             loadFirebaseData();
         }
 
-        async function removeFriend(firebaseId) {
-            await fetch(`${FIREBASE_URL}friends/${firebaseId}.json`, { method: 'DELETE' });
+        // Запуск процесса редактирования услуги
+        function startEditService(firebaseId) {
+            const service = globalServices.find(s => s.firebaseId === firebaseId);
+            if(!service) return;
+
+            editingServiceId = firebaseId;
+
+            // Заполняем форму данными выбранной услуги
+            document.getElementById('new-service-title').value = service.title || '';
+            document.getElementById('new-service-price').value = service.price || '';
+            document.getElementById('new-service-desc').value = service.desc || '';
+            document.getElementById('new-service-tg').value = service.tg || '';
+            document.getElementById('new-service-phone').value = service.phone || '';
+
+            // Меняем заголовки и кнопки на форме
+            document.getElementById('service-form-title').innerText = '✍️ Редактировать услугу';
+            document.getElementById('service-form-title').style.color = '#e11d48';
+            document.getElementById('service-submit-btn').innerText = 'Сохранить изменения';
+            document.getElementById('service-submit-btn').classList.add('edit-badge');
+            document.getElementById('service-cancel-btn').style.display = 'block';
+
+            // Прокручиваем модалку вверх к форме, чтобы админ сразу увидел её
+            document.getElementById('admin-panel-step').scrollTop = 0;
+        }
+
+        // Отмена редактирования услуги
+        function cancelServiceEdit() {
+            editingServiceId = null;
+            document.getElementById('new-service-title').value = '';
+            document.getElementById('new-service-price').value = '';
+            document.getElementById('new-service-desc').value = '';
+            document.getElementById('new-service-tg').value = '';
+            document.getElementById('new-service-phone').value = '';
+
+            document.getElementById('service-form-title').innerText = 'Добавить услугу в общий список';
+            document.getElementById('service-form-title').style.color = '#fff';
+            document.getElementById('service-submit-btn').innerText = 'Добавить услугу';
+            document.getElementById('service-submit-btn').classList.remove('edit-badge');
+            document.getElementById('service-cancel-btn').style.display = 'none';
+        }
+
+        // Удаление элементов
+        async function removePhoto(firebaseId) {
+            if(!confirm('Удалить эту фотографию из галереи?')) return;
+            await fetch(`${FIREBASE_URL}gallery/${firebaseId}.json`, { method: 'DELETE' });
             loadFirebaseData();
         }
 
         async function removeService(firebaseId) {
+            if(!confirm('Удалить эту услугу навсегда?')) return;
             await fetch(`${FIREBASE_URL}services/${firebaseId}.json`, { method: 'DELETE' });
+            if (editingServiceId === firebaseId) cancelServiceEdit();
             loadFirebaseData();
         }
 
@@ -457,23 +522,30 @@
             loadFirebaseData();
         }
 
+        // Отрисовка списков управления в админке
         function renderAdminControls() {
-            let html = '<p style="font-size:0.9rem; color:#94a3b8; margin-bottom:5px;">Друзья:</p>';
-            globalFriends.forEach((f) => {
+            // Управление фото
+            let html = '<p style="font-size:0.9rem; color:#00d2ff; margin-bottom:5px;">Галерея APG:</p>';
+            globalPhotos.forEach((p) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>${f.tg} (${f.title})</span>
-                    <button onclick="removeFriend('${f.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
+                    <span>🖼️ ${p.desc ? p.desc.substring(0, 20) : 'Без подписи'}</span>
+                    <button onclick="removePhoto('${p.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
                 </div>`;
             });
 
-            html += '<p style="font-size:0.9rem; color:#94a3b8; margin-top:15px; margin-bottom:5px;">Все услуги в списке:</p>';
+            // Управление услугами (Удаление + Редактирование!)
+            html += '<p style="font-size:0.9rem; color:#22c55e; margin-top:15px; margin-bottom:5px;">Все услуги в списке:</p>';
             globalServices.forEach((s, i) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>№${i+1}. ${s.title.substring(0,30)}...</span>
-                    <button onclick="removeService('${s.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
+                    <span>№${i+1}. ${s.title.substring(0,25)}...</span>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="startEditService('${s.firebaseId}')" style="background:#f59e0b; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Редакт.</button>
+                        <button onclick="removeService('${s.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
+                    </div>
                 </div>`;
             });
 
+            // Управление отзывами
             html += '<p style="font-size:0.9rem; color:#f59e0b; margin-top:15px; margin-bottom:5px;">Модерация отзывов:</p>';
             globalReviews.forEach((r) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
