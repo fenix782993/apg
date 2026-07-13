@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auto Partners Group | APG</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Дополнительные стили для отзывов и звезд, чтобы не менять style.css */
+        .rating-select { display: flex; gap: 8px; margin-bottom: 12px; font-size: 1.5rem; }
+        .rating-select span { cursor: pointer; color: #475569; transition: color 0.2s; }
+        .rating-select span.active { color: #f59e0b; text-shadow: 0 0 10px rgba(245,158,11,0.5); }
+        .review-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 15px; backdrop-filter: blur(10px); }
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+        .review-author { font-weight: bold; color: #00d2ff; }
+        .review-stars { color: #f59e0b; }
+        .review-date { font-size: 0.8rem; color: #64748b; }
+        .review-text { color: #cbd5e1; line-height: 1.4; font-size: 0.95rem; }
+        .reviews-container { max-width: 800px; margin: 0 auto; }
+        .write-review-block { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(0, 210, 255, 0.2); padding: 20px; border-radius: 16px; margin-bottom: 25px; }
+    </style>
 </head>
 <body>
 
@@ -24,6 +38,7 @@
         <button class="tab-btn active" onclick="switchTab('chats-tab', this)">Чаты и ресурсы</button>
         <button class="tab-btn" onclick="switchTab('shop-tab', this)">Магазин запчастей</button>
         <button class="tab-btn" onclick="switchTab('services-tab', this)" id="services-tab-btn">Услуги</button>
+        <button class="tab-btn" onclick="switchTab('reviews-tab', this)" id="reviews-tab-btn">Отзывы</button>
         <button class="tab-btn" onclick="switchTab('friends-tab', this)">Наши друзья</button>
     </div>
 
@@ -113,6 +128,31 @@
             </section>
         </div>
 
+        <div id="reviews-tab" class="tab-content">
+            <section class="section-block review-section">
+                <h2>Отзывы и Предложения APG</h2>
+                
+                <div class="write-review-block">
+                    <h3 style="color:#00d2ff; margin-bottom:15px; font-size:1.1rem;">Оставить свой отзыв / предложение</h3>
+                    <input type="text" id="review-author-input" placeholder="Ваше имя или Telegram (@nickname)" style="width:100%; padding:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; margin-bottom:10px;">
+                    
+                    <label style="font-size:0.85rem; color:#94a3b8; display:block; margin-bottom:5px;">Ваша оценка:</label>
+                    <div class="rating-select" id="review-stars-select">
+                        <span onclick="setReviewStars(1)">★</span>
+                        <span onclick="setReviewStars(2)">★</span>
+                        <span onclick="setReviewStars(3)">★</span>
+                        <span onclick="setReviewStars(4)">★</span>
+                        <span onclick="setReviewStars(5)">★</span>
+                    </div>
+
+                    <textarea id="review-text-input" placeholder="Напишите честный отзыв о магазине, услугах или клубе..." style="width:100%; height:80px; padding:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; margin-bottom:12px; resize:none;"></textarea>
+                    <button class="tg-button blue-btn" onclick="sendUserReview()">Отправить на стену</button>
+                </div>
+
+                <div class="reviews-container" id="reviews-list-container"></div>
+            </section>
+        </div>
+
         <div id="friends-tab" class="tab-content">
             <section class="section-block friends-section">
                 <h2>Наши друзья и партнеры</h2>
@@ -173,8 +213,14 @@
     <script>
         const FIREBASE_URL = "https://apg-site-56d91-default-rtdb.firebaseio.com/";
 
+        // ЕСЛИ ЗАХОЧЕШЬ ВКЛЮЧИТЬ ТЕЛЕГРАМ-БОТА В БУДУЩЕМ, ЗАПОЛНИ ЭТИ ПОЛЯ:
+        const TG_BOT_TOKEN = ""; 
+        const TG_CHAT_ID = ""; 
+
         let globalFriends = [];
         let globalServices = [];
+        let globalReviews = [];
+        let selectedReviewStars = 5;
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
@@ -187,6 +233,10 @@
                 const dataServices = await resServices.json();
                 globalServices = dataServices ? Object.keys(dataServices).map(key => ({...dataServices[key], firebaseId: key})) : [];
 
+                const resReviews = await fetch(`${FIREBASE_URL}reviews.json`);
+                const dataReviews = await resReviews.json();
+                globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).reverse() : [];
+
                 renderData();
                 if(document.getElementById('adminModal').style.display === 'flex') {
                     renderAdminControls();
@@ -197,13 +247,28 @@
         }
 
         setInterval(loadFirebaseData, 3000);
-        window.onload = loadFirebaseData;
+        window.onload = () => {
+            loadFirebaseData();
+            setReviewStars(5); // По умолчанию 5 звезд при старте
+        };
 
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             if(element) element.classList.add('active');
+        }
+
+        function setReviewStars(count) {
+            selectedReviewStars = count;
+            const stars = document.querySelectorAll('#review-stars-select span');
+            stars.forEach((star, index) => {
+                if(index < count) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
         }
 
         function openAdminModal() { 
@@ -228,8 +293,9 @@
 
         function renderData() {
             document.getElementById('services-tab-btn').innerText = `Услуги (${globalServices.length})`;
+            document.getElementById('reviews-tab-btn').innerText = `Отзывы (${globalReviews.length})`;
 
-            // Вывод ВСЕХ услуг одним общим списком
+            // Вывод услуг
             let servicesHtml = '';
             globalServices.forEach((s, index) => {
                 let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
@@ -251,6 +317,22 @@
                     </div>`;
             });
             document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">Список услуг пуст</p>';
+
+            // Вывод отзывов
+            let reviewsHtml = '';
+            globalReviews.forEach((r) => {
+                let starsString = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+                reviewsHtml += `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <span class="review-author">👤 ${r.author}</span>
+                            <span class="review-stars">${starsString}</span>
+                        </div>
+                        <p class="review-text">${r.text}</p>
+                        <div style="text-align:right; margin-top:5px;"><span class="review-date">${r.date || ''}</span></div>
+                    </div>`;
+            });
+            document.getElementById('reviews-list-container').innerHTML = reviewsHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">Отзывов пока нет. Будьте первым!</p>';
 
             // Вывод друзей
             const titles = ["Администрация", "Партнер APG", "Друг сообщества", "VIP Клуб"];
@@ -279,6 +361,45 @@
                 }
             });
             document.getElementById('friends-grouped-container').innerHTML = groupedHtml || '<p style="text-align:center; color:#64748b;">Список друзей пуст</p>';
+        }
+
+        async function sendUserReview() {
+            const author = document.getElementById('review-author-input').value.trim();
+            const text = document.getElementById('review-text-input').value.trim();
+            
+            if(!author || !text) return alert('Пожалуйста, введите ваше имя и текст отзыва!');
+            
+            const options = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
+            const dateStr = new Date().toLocaleDateString('ru-RU', options);
+
+            const reviewData = {
+                author: author,
+                text: text,
+                stars: selectedReviewStars,
+                date: dateStr
+            };
+
+            await fetch(`${FIREBASE_URL}reviews.json`, {
+                method: 'POST',
+                body: JSON.stringify(reviewData)
+            });
+
+            // Отправка ботом в Телеграм (если настроен)
+            if(TG_BOT_TOKEN && TG_CHAT_ID) {
+                let starsLine = '⭐'.repeat(selectedReviewStars);
+                let msg = `📣 *Новый отзыв на сайте APG!*\n\n👤 *От кого:* ${author}\n${starsLine}\n💬 *Текст:* ${text}`;
+                fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+                }).catch(e => console.log('Ошибка отправки в TG:', e));
+            }
+
+            document.getElementById('review-author-input').value = '';
+            document.getElementById('review-text-input').value = '';
+            setReviewStars(5);
+            loadFirebaseData();
+            alert('Спасибо! Ваш отзыв добавлен на стену.');
         }
 
         async function addNewFriend() {
@@ -330,6 +451,12 @@
             loadFirebaseData();
         }
 
+        async function removeReview(firebaseId) {
+            if(!confirm('Удалить этот отзыв со стены?')) return;
+            await fetch(`${FIREBASE_URL}reviews/${firebaseId}.json`, { method: 'DELETE' });
+            loadFirebaseData();
+        }
+
         function renderAdminControls() {
             let html = '<p style="font-size:0.9rem; color:#94a3b8; margin-bottom:5px;">Друзья:</p>';
             globalFriends.forEach((f) => {
@@ -344,6 +471,14 @@
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
                     <span>№${i+1}. ${s.title.substring(0,30)}...</span>
                     <button onclick="removeService('${s.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
+                </div>`;
+            });
+
+            html += '<p style="font-size:0.9rem; color:#f59e0b; margin-top:15px; margin-bottom:5px;">Модерация отзывов:</p>';
+            globalReviews.forEach((r) => {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
+                    <span>⭐${r.stars} <b>${r.author}:</b> ${r.text.substring(0,25)}...</span>
+                    <button onclick="removeReview('${r.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
                 </div>`;
             });
             document.getElementById('admin-manage-lists').innerHTML = html;
