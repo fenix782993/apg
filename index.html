@@ -194,13 +194,13 @@
                 <h3>Панель управления APG (Live База)</h3>
                 
                 <div class="admin-subform">
-                    <h4>Добавить фото в галерею APG (JPG/PNG)</h4>
+                    <h4>Добавить фото в галерею APG (Массовая загрузка)</h4>
                     <div class="file-input-wrapper">
-                        <label for="new-photo-file" class="file-input-label" id="file-label-text">📁 Выбрать файл изображения</label>
-                        <input type="file" id="new-photo-file" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="handleFileSelect(this)">
+                        <label for="new-photo-file" class="file-input-label" id="file-label-text">📁 Выбрать файлы изображений (можно несколько)</label>
+                        <input type="file" id="new-photo-file" accept="image/jpeg, image/png, image/jpg" multiple style="display:none;" onchange="handleMultipleFilesSelect(this)">
                     </div>
-                    <input type="text" id="new-photo-desc" placeholder="Описание / Подпись (например: Сходка 2026)">
-                    <button class="tg-button blue-btn" id="upload-photo-btn" onclick="addNewPhoto()">Добавить в галерею</button>
+                    <input type="text" id="new-photo-desc" placeholder="Общее описание для этой пачки фото (необязательно)">
+                    <button class="tg-button blue-btn" id="upload-photo-btn" onclick="uploadAllSelectedPhotos()">Добавить в галерею</button>
                 </div>
 
                 <div class="admin-subform">
@@ -240,7 +240,7 @@
         
         let selectedReviewStars = 5;
         let editingServiceId = null; 
-        let encodedBase64Photo = ""; // Переменная для хранения кода выбранной картинки
+        let selectedFilesQueue = []; // Очередь файлов для пакетной загрузки
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
@@ -398,54 +398,65 @@
             alert('Спасибо! Ваш отзыв добавлен на стену.');
         }
 
-        // --- ОБРАБОТКА ВЫБРАННОГО ФАЙЛА ИЗОБРАЖЕНИЯ ---
-        function handleFileSelect(input) {
-            const file = input.files[0];
-            if (!file) return;
+        // --- МАССОВАЯ ЗАГРУЗКА ИЗОБРАЖЕНИЙ С ОЧЕРЕДЬЮ ---
+        function handleMultipleFilesSelect(input) {
+            const files = input.files;
+            if (!files || files.length === 0) return;
 
-            // Проверка размера файла (чтобы база не перегружалась, лучше загружать до 2.5 МБ)
-            if (file.size > 2621440) {
-                alert("Файл слишком большой! Пожалуйста, выберите фото размером меньше 2.5 МБ.");
-                input.value = "";
-                return;
+            selectedFilesQueue = [];
+            let validFilesCount = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].size <= 2621440) { // Лимит 2.5 МБ на файл для Realtime DB
+                    selectedFilesQueue.push(files[i]);
+                    validFilesCount++;
+                }
             }
 
-            document.getElementById('file-label-text').innerText = `✅ Выбран: ${file.name.substring(0, 20)}...`;
-
-            // Читаем файл и кодируем в строку Base64
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                encodedBase64Photo = e.target.result; // Сюда падает готовый код картинки
-            };
-            reader.readAsDataURL(file);
+            document.getElementById('file-label-text').innerText = `✅ Выбрано файлов: ${validFilesCount} (пропущено тяжелых: ${files.length - validFilesCount})`;
         }
 
-        // Сохранение фото в Firebase
-        async function addNewPhoto() {
+        async function uploadAllSelectedPhotos() {
+            if (selectedFilesQueue.length === 0) {
+                return alert('Пожалуйста, выберите хотя бы один файл!');
+            }
+
             const desc = document.getElementById('new-photo-desc').value.trim();
-
-            if(!encodedBase64Photo) return alert('Пожалуйста, выберите файл фотографии через кнопку!');
-
             const btn = document.getElementById('upload-photo-btn');
-            btn.innerText = "Загрузка...";
+            
             btn.disabled = true;
+            
+            for (let i = 0; i < selectedFilesQueue.length; i++) {
+                const file = selectedFilesQueue[i];
+                btn.innerText = `Загрузка: ${i + 1} из ${selectedFilesQueue.length}...`;
 
-            await fetch(`${FIREBASE_URL}gallery.json`, {
-                method: 'POST',
-                body: JSON.stringify({ url: encodedBase64Photo, desc: desc })
-            });
+                try {
+                    const base64Data = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = (err) => reject(err);
+                        reader.readAsDataURL(file);
+                    });
 
-            // Сброс полей
-            encodedBase64Photo = "";
+                    await fetch(`${FIREBASE_URL}gallery.json`, {
+                        method: 'POST',
+                        body: JSON.stringify({ url: base64Data, desc: desc })
+                    });
+                } catch (e) {
+                    console.error(`Ошибка при загрузке ${file.name}:`, e);
+                }
+            }
+
+            selectedFilesQueue = [];
             document.getElementById('new-photo-file').value = "";
-            document.getElementById('file-label-text').innerText = "📁 Выбрать файл изображения";
+            document.getElementById('file-label-text').innerText = "📁 Выбрать файлы изображений (можно несколько)";
             document.getElementById('new-photo-desc').value = '';
             
             btn.innerText = "Добавить в галерею";
             btn.disabled = false;
             
             loadFirebaseData();
-            alert('Фото успешно добавлено в галерею!');
+            alert('Все фотографии успешно загружены в галерею!');
         }
 
         // Добавление или Изменение услуги
