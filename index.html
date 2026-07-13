@@ -200,7 +200,7 @@
                 <h3>Панель управления APG (Live База)</h3>
                 
                 <div class="admin-subform">
-                    <h4>Добавить фото в галерею APG (Массовая загрузка)</h4>
+                    <h4>Добавить фото в галерею APG (Массовая загрузка с авто-сжатием)</h4>
                     <div class="file-input-wrapper">
                         <label for="new-photo-file" class="file-input-label" id="file-label-text">📁 Выбрать файлы изображений (можно несколько)</label>
                         <input type="file" id="new-photo-file" accept="image/jpeg, image/png, image/jpg" multiple style="display:none;" onchange="handleMultipleFilesSelect(this)">
@@ -246,24 +246,28 @@
         let selectedReviewStars = 5;
         let editingServiceId = null; 
         let selectedFilesQueue = []; 
-        let isFirstLoadDone = false; // Флаг для предотвращения показа 0 элементов при входе
+        let isFirstLoadDone = false; 
 
-        // Загрузка данных из Firebase
+        // Оптимизированная параллельная загрузка (Загружает ВСЕ три базы одновременно)
         async function loadFirebaseData() {
             try {
-                const resServices = await fetch(`${FIREBASE_URL}services.json`);
-                const dataServices = await resServices.json();
+                const [resServices, resReviews, resPhotos] = await Promise.all([
+                    fetch(`${FIREBASE_URL}services.json`),
+                    fetch(`${FIREBASE_URL}reviews.json`),
+                    fetch(`${FIREBASE_URL}gallery.json`)
+                ]);
+
+                const [dataServices, dataReviews, dataPhotos] = await Promise.all([
+                    resServices.json(),
+                    resReviews.json(),
+                    resPhotos.json()
+                ]);
+
                 globalServices = dataServices ? Object.keys(dataServices).map(key => ({...dataServices[key], firebaseId: key})) : [];
-
-                const resReviews = await fetch(`${FIREBASE_URL}reviews.json`);
-                const dataReviews = await resReviews.json();
                 globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).reverse() : [];
-
-                const resPhotos = await fetch(`${FIREBASE_URL}gallery.json`);
-                const dataPhotos = await resPhotos.json();
                 globalPhotos = dataPhotos ? Object.keys(dataPhotos).map(key => ({...dataPhotos[key], firebaseId: key})).reverse() : [];
 
-                isFirstLoadDone = true; // Данные загружены с сервера
+                isFirstLoadDone = true; 
                 renderData();
                 if(document.getElementById('adminModal').style.display === 'flex') {
                     renderAdminControls();
@@ -273,7 +277,7 @@
             }
         }
 
-        // Мгновенный вызов при инициализации скрипта
+        // Моментальный старт
         loadFirebaseData();
         setInterval(loadFirebaseData, 4000);
 
@@ -322,12 +326,8 @@
         }
 
         function renderData() {
-            // Если первая загрузка еще не завершена, не отображаем пустую разметку
-            if (!isFirstLoadDone) {
-                return; 
-            }
+            if (!isFirstLoadDone) return; 
 
-            // Обновляем счетчики на кнопках вкладок только после успешной загрузки
             document.getElementById('services-tab-btn').innerText = `Услуги (${globalServices.length})`;
             document.getElementById('reviews-tab-btn').innerText = `Отзывы (${globalReviews.length})`;
             document.getElementById('gallery-tab-btn').innerText = `Галерея (${globalPhotos.length})`;
@@ -413,24 +413,47 @@
             alert('Спасибо! Ваш отзыв добавлен на стену.');
         }
 
-        // --- МАССОВАЯ ЗАГРУЗКА ИЗОБРАЖЕНИЙ С ОЧЕРЕДЬЮ ---
+        // Выбор нескольких файлов без жестких лимитов веса (т.к. далее идет авто-сжатие)
         function handleMultipleFilesSelect(input) {
             const files = input.files;
             if (!files || files.length === 0) return;
-
-            selectedFilesQueue = [];
-            let validFilesCount = 0;
-
-            for (let i = 0; i < files.length; i++) {
-                if (files[i].size <= 2621440) { // Лимит 2.5 МБ на один файл
-                    selectedFilesQueue.push(files[i]);
-                    validFilesCount++;
-                }
-            }
-
-            document.getElementById('file-label-text').innerText = `✅ Выбрано файлов: ${validFilesCount} (пропущено тяжелых: ${files.length - validFilesCount})`;
+            selectedFilesQueue = Array.from(files);
+            document.getElementById('file-label-text').innerText = `✅ Выбрано файлов: ${files.length}. Готовы к авто-сжатию.`;
         }
 
+        // ФУНКЦИЯ КЛИЕНТСКОГО СЖАТИЯ ФОТО ПЕРЕД ОТПРАВКОЙ (Макс: FullHD, Качество: 0.7)
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const MAX_WIDTH = 1400; // Оптимальный размер для мобилок и ПК
+
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Экспортируем в легкий jpeg с качеством 70%
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(compressedBase64);
+                    };
+                };
+            });
+        }
+
+        // Поочередная отправка уже СЖАТЫХ картинок
         async function uploadAllSelectedPhotos() {
             if (selectedFilesQueue.length === 0) {
                 return alert('Пожалуйста, выберите хотя бы один файл!');
@@ -438,27 +461,22 @@
 
             const desc = document.getElementById('new-photo-desc').value.trim();
             const btn = document.getElementById('upload-photo-btn');
-            
             btn.disabled = true;
             
             for (let i = 0; i < selectedFilesQueue.length; i++) {
                 const file = selectedFilesQueue[i];
-                btn.innerText = `Загрузка: ${i + 1} из ${selectedFilesQueue.length}...`;
+                btn.innerText = `⚙️ Сжатие и заливка: ${i + 1} из ${selectedFilesQueue.length}...`;
 
                 try {
-                    const base64Data = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.onerror = (err) => reject(err);
-                        reader.readAsDataURL(file);
-                    });
+                    // Фото ужимается на лету с 5МБ до ~150КБ
+                    const compressedBase64 = await compressImage(file);
 
                     await fetch(`${FIREBASE_URL}gallery.json`, {
                         method: 'POST',
-                        body: JSON.stringify({ url: base64Data, desc: desc })
+                        body: JSON.stringify({ url: compressedBase64, desc: desc })
                     });
                 } catch (e) {
-                    console.error(`Ошибка при загрузке ${file.name}:`, e);
+                    console.error(`Ошибка отправки ${file.name}:`, e);
                 }
             }
 
@@ -471,7 +489,7 @@
             btn.disabled = false;
             
             loadFirebaseData();
-            alert('Все фотографии успешно загружены в галерею!');
+            alert('Все фотографии сжаты и успешно загружены!');
         }
 
         // Добавление или Изменение услуги
