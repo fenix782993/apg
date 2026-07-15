@@ -6,54 +6,64 @@
     <title>Auto Partners Group | APG</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Стили для отзывов и звезд */
+        /* Стили авторизации */
+        .auth-container { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 16px; padding: 20px; max-width: 400px; margin: 20px auto; text-align: center; }
+        .tg-auth-btn { background: #0088cc; color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; margin-top: 15px; border: none; cursor: pointer; }
+        .tg-auth-btn:hover { background: #0077b3; }
+
+        /* Стили отзывов */
         .rating-select { display: flex; gap: 8px; margin-bottom: 12px; font-size: 1.5rem; }
         .rating-select span { cursor: pointer; color: #475569; transition: color 0.2s; }
         .rating-select span.active { color: #f59e0b; text-shadow: 0 0 10px rgba(245,158,11,0.5); }
-        .review-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 15px; backdrop-filter: blur(10px); }
+        .review-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 15px; backdrop-filter: blur(10px); position: relative; }
         .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
         .review-author { font-weight: bold; color: #00d2ff; }
         .review-stars { color: #f59e0b; }
-        .review-date { font-size: 0.8rem; color: #64748b; }
         .review-text { color: #cbd5e1; line-height: 1.4; font-size: 0.95rem; }
         .reviews-container { max-width: 800px; margin: 0 auto; }
         .write-review-block { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(0, 210, 255, 0.2); padding: 20px; border-radius: 16px; margin-bottom: 25px; }
 
-        /* Сетки для галерей (ровно 2 фото в ряд) */
+        /* Сетки галерей */
         .gallery-grid, .merch-grid, .cards-grid, .achievements-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
         .gallery-item, .merch-item, .card-gallery-item, .achievement-item { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; aspect-ratio: 4/3; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        
-        /* Соотношение сторон под вертикальный формат карточек и грамот */
         .card-gallery-item { aspect-ratio: 1 / 1.41; } 
-        .achievement-item { aspect-ratio: 1 / 1.41; } /* Вертикальный формат для грамот */
+        .achievement-item { aspect-ratio: 1 / 1.41; } 
 
         .gallery-item img, .merch-item img, .card-gallery-item img, .achievement-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; display: block; }
         .gallery-item:hover img, .merch-item:hover img, .card-gallery-item:hover img, .achievement-item:hover img { transform: scale(1.05); }
         .gallery-item .photo-caption, .merch-item .photo-caption, .achievement-item .photo-caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 10px; font-size: 0.9rem; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
 
-        /* Конструктор карточек «APG FAMILY» */
+        /* Конструктор карточек */
         .card-generator-block { background: rgba(15, 23, 42, 0.7); border: 2px solid #00d2ff; padding: 25px; border-radius: 20px; max-width: 600px; margin: 0 auto; box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); }
         .card-generator-block input, .card-generator-block select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; margin-bottom: 15px; font-size: 0.95rem; }
-        .card-generator-block select { cursor: pointer; }
         .generator-preview-container { text-align: center; margin-top: 25px; display: none; }
         .generator-preview-container canvas { max-width: 100%; border-radius: 12px; border: 2px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); background: #0c101b; display: none; }
         .generated-result-img { max-width: 100%; border-radius: 12px; border: 2px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
 
-        /* Элементы управления редактированием */
-        .edit-badge { background: #e11d48 !important; }
-        .cancel-edit-btn { background: #475569 !important; margin-top: 5px; }
-        
-        /* Стили для кнопки выбора файла */
         .file-input-wrapper { margin-bottom: 12px; }
         .file-input-label { display: block; padding: 10px; background: #1e293b; border: 1px dashed rgba(255,255,255,0.2); text-align: center; border-radius: 8px; cursor: pointer; color: #cbd5e1; font-size: 0.9rem; transition: background 0.2s; }
         .file-input-label:hover { background: #334155; border-color: #00d2ff; }
 
-        /* Адаптивность вкладок на мобильных устройствах */
         .navigation-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .navigation-tabs .tab-btn { flex: 1 1 calc(33.33% - 8px); min-width: 110px; font-size: 0.85rem; padding: 8px 5px; text-align: center; }
+        
+        /* Стили Кнопок Админа на Сайте */
+        .admin-action-btn { background: #e11d48; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: bold; margin-top: 8px; transition: background 0.2s; }
+        .admin-action-btn:hover { background: #be123c; }
+        .admin-badge { background: #e11d48; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-left: 10px; }
+        .admin-controls-card { border: 1px dashed #e11d48 !important; }
+        
+        /* Кнопка входа в админку (незаметная молния в шапке) */
+        .admin-trigger-btn { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: rgba(255, 255, 255, 0.2); font-size: 1.2rem; cursor: pointer; transition: color 0.3s; }
+        .admin-trigger-btn:hover { color: #e11d48; }
 
-        /* Подразделы в Галерее */
-        .gallery-sub-section { margin-top: 35px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
+        /* Окно модерации на сайте */
+        .admin-panel-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 1000; overflow-y: auto; padding: 20px; }
+        .admin-panel-content { max-width: 800px; margin: 40px auto; background: #0f172a; border: 2px solid #e11d48; border-radius: 16px; padding: 25px; box-shadow: 0 0 30px rgba(225, 29, 72, 0.3); }
+        .admin-panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
+        .close-admin-btn { background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+        .admin-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .admin-section { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; }
     </style>
 </head>
 <body>
@@ -67,8 +77,18 @@
             <h1>Auto Partners Group</h1>
             <p class="subtitle">Добро пожаловать в семью APG</p>
         </div>
-        <button class="admin-trigger-btn" onclick="openAdminModal()">⚡</button>
+        <button class="admin-trigger-btn" onclick="promptAdminLogin()">⚡</button>
     </header>
+
+    <div class="auth-container">
+        <h4 id="auth-title">🔒 Личный Кабинет APG</h4>
+        <p id="auth-desc" style="color: #64748b; font-size: 0.85rem;">Авторизуйтесь, чтобы управлять своей карточкой</p>
+        <div id="auth-action-area">
+            <button class="tg-auth-btn" onclick="startTelegramAuth()">
+                💬 Войти через Telegram
+            </button>
+        </div>
+    </div>
 
     <div class="navigation-tabs">
         <button class="tab-btn active" onclick="switchTab('chats-tab', this)">Ресурсы</button>
@@ -96,36 +116,6 @@
                         <p>Общение, взаимопомощь и обсуждения 24/7.</p>
                         <span class="btn">Вступить</span>
                     </a>
-                    <a href="https://t.me/Anti_Police_ELB" target="_blank" class="card">
-                        <h3>Анти Полис Чат</h3>
-                        <p>Информационный хаб сообщества.</p>
-                        <span class="btn">Вступить</span>
-                    </a>
-                    <a href="https://t.me/APG_ZAPRAVKI" target="_blank" class="card">
-                        <h3>APG Заправки</h3>
-                        <p>Все о топливе и актуальных ценах.</p>
-                        <span class="btn">Узнать больше</span>
-                    </a>
-                    <a href="https://t.me/APG_SHOP" target="_blank" class="card">
-                        <h3>Чат продаж (APG Shop)</h3>
-                        <p>Покупка и продажа ништяков для авто.</p>
-                        <span class="btn">В магазин</span>
-                    </a>
-                    <a href="https://max.ru/join/XCxK-_IF6qB47T_dwntlJI1RqkFLJLC32XBRzutMF1k" target="_blank" class="card">
-                        <h3>Группы MAX: Анти Police</h3>
-                        <p>Дополнительная платформа сообщества.</p>
-                        <span class="btn">Присоединиться</span>
-                    </a>
-                    <a href="https://t.me/Tat_Audio" target="_blank" class="card">
-                        <h3>Студия автозвука</h3>
-                        <p>Качественный звук, инсталляции и настройка в авто.</p>
-                        <span class="btn">Перейти</span>
-                    </a>
-                    <a href="https://t.me/GlobalAutoExportt" target="_blank" class="card">
-                        <h3>Авто из Кореи, Японии, Китая</h3>
-                        <p>Заказ и доставка автомобилей напрямую под ключ.</p>
-                        <span class="btn">Подобрать авто</span>
-                    </a>
                 </div>
             </section>
         </div>
@@ -133,7 +123,7 @@
         <div id="card-tab" class="tab-content">
             <section class="section-block">
                 <h2>Генератор карточек «APG FAMILY»</h2>
-                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:20px;">Создай свою стильную клубную карточку, скачай её и попади в общую галерею участников клуба!</p>
+                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:20px;">Создай свою стильную клубную карточку, скачай её и отправь админу на модерацию в один клик!</p>
                 
                 <div class="card-generator-block">
                     <label style="color:#00d2ff; font-weight:bold; font-size:0.9rem; display:block; margin-bottom:5px;">Твой Никнейм / Telegram:</label>
@@ -160,11 +150,11 @@
                         <input type="file" id="gen-photo-file" accept="image/*" style="display:none;" onchange="handleGenPhotoSelect(this)">
                     </div>
 
-                    <button class="tg-button blue-btn" onclick="generateClubCard()" style="margin-top:10px; font-weight:bold; font-size:1.05rem;">⚡ Создать и Опубликовать</button>
+                    <button class="tg-button blue-btn" onclick="generateClubCard()" style="margin-top:10px; font-weight:bold; font-size:1.05rem;">⚡ Создать и Отправить</button>
                 </div>
 
                 <div class="generator-preview-container" id="generator-preview-container">
-                    <h3 style="color:#fff; margin-bottom:15px;">Твоя клубная карточка готова!</h3>
+                    <h3 style="color:#fff; margin-bottom:15px;">Карточка отправлена на модерацию!</h3>
                     <canvas id="clubCardCanvas" width="600" height="850"></canvas>
                     <img id="generatedImgElement" class="generated-result-img" alt="Клубная карточка">
                     <br>
@@ -174,9 +164,8 @@
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 40px 0;">
 
                 <h3 style="text-align: center; color: #00d2ff; font-size: 1.4rem; margin-bottom: 5px;">Семья APG в Лицах</h3>
-                <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Карточки участников нашего автосообщества</p>
                 <div class="cards-grid" id="club-cards-container">
-                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка карточек участников...</p>
+                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка карточек...</p>
                 </div>
             </section>
         </div>
@@ -187,24 +176,7 @@
                 <div class="shop-container">
                     <div class="shop-info">
                         <h3>Автозапчасти в наличии и под заказ</h3>
-                        <p class="shop-desc">Широкий ассортимент качественных товаров для вашего автомобиля: автохимия, автоаксессуары, шины и диски любых размеров.</p>
-                        <div class="location-badge">
-                            <strong>Наш адрес:</strong> г. Елабуга, Окружное шоссе 35Б, СТО ФАЭТОН
-                        </div>
-                    </div>
-                    <div class="contacts-list">
-                        <div class="contact-item">
-                            <h4>Алина</h4>
-                            <p class="role">Вопросы по магазину</p>
-                            <a href="https://t.me/apg_alina" target="_blank" class="tg-link">@apg_alina</a>
-                            <a href="tel:+79178910110" class="phone-link">+7 (917) 891-01-10</a>
-                        </div>
-                        <div class="contact-item">
-                            <h4>Ленар</h4>
-                            <p class="role">Заказные позиции</p>
-                            <a href="https://t.me/LENAR_APG" target="_blank" class="tg-link">@LENAR_APG</a>
-                            <a href="tel:+79061199720" class="phone-link">+7 (906) 119-97-20</a>
-                        </div>
+                        <p class="shop-desc">Широкий ассортимент качественных товаров для вашего автомобиля.</p>
                     </div>
                 </div>
             </section>
@@ -213,21 +185,15 @@
         <div id="services-tab" class="tab-content">
             <section class="section-block service-section">
                 <h2>Услуги сообщества</h2>
-                <div class="services-vertical-list" id="services-list-container">
-                    <p style="text-align:center; color:#64748b; padding: 20px;">Загрузка услуг сообщества...</p>
-                </div>
+                <div class="services-vertical-list" id="services-list-container"></div>
             </section>
         </div>
 
         <div id="reviews-tab" class="tab-content">
             <section class="section-block review-section">
                 <h2>Отзывы и Предложения APG</h2>
-                
                 <div class="write-review-block">
-                    <h3 style="color:#00d2ff; margin-bottom:15px; font-size:1.1rem;">Оставить свой отзыв / предложение</h3>
-                    <input type="text" id="review-author-input" placeholder="Ваше имя или Telegram (@nickname)" style="width:100%; padding:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; margin-bottom:10px;">
-                    
-                    <label style="font-size:0.85rem; color:#94a3b8; display:block; margin-bottom:5px;">Ваша оценка:</label>
+                    <input type="text" id="review-author-input" placeholder="@APGsiteRobot" style="width:100%; padding:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; margin-bottom:10px;">
                     <div class="rating-select" id="review-stars-select">
                         <span onclick="setReviewStars(1)">★</span>
                         <span onclick="setReviewStars(2)">★</span>
@@ -235,33 +201,21 @@
                         <span onclick="setReviewStars(4)">★</span>
                         <span onclick="setReviewStars(5)">★</span>
                     </div>
-
-                    <textarea id="review-text-input" placeholder="Напишите честный отзыв о магазине, услугах или клубе..." style="width:100%; height:80px; padding:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; margin-bottom:12px; resize:none;"></textarea>
-                    <button class="tg-button blue-btn" onclick="sendUserReview()">Отправить на стену</button>
+                    <textarea id="review-text-input" placeholder="Напишите честный отзыв..." style="width:100%; height:80px; padding:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; margin-bottom:12px; resize:none;"></textarea>
+                    <button class="tg-button blue-btn" onclick="sendUserReview()">Отправить отзыв</button>
                 </div>
-
-                <div class="reviews-container" id="reviews-list-container">
-                    <p style="text-align:center; color:#64748b; padding: 20px;">Загрузка отзывов...</p>
-                </div>
+                <div class="reviews-container" id="reviews-list-container"></div>
             </section>
         </div>
 
         <div id="gallery-tab" class="tab-content">
             <section class="section-block gallery-section">
                 <h2>Галерея Auto Partners Group</h2>
-                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:10px;">Фотографии автомобилей, сходок и ярких моментов нашей банды!</p>
-                
-                <div class="gallery-grid" id="gallery-images-container">
-                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка галереи APG...</p>
-                </div>
+                <div class="gallery-grid" id="gallery-images-container"></div>
 
                 <div class="gallery-sub-section">
-                    <h3 style="text-align: center; color: #f59e0b; font-size: 1.4rem; margin-bottom: 5px; text-shadow: 0 0 10px rgba(245,158,11,0.2);">🏆 Наши достижения</h3>
-                    <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:15px;">Кубки, грамоты, дипломы и официальные награды нашего клуба!</p>
-                    
-                    <div class="achievements-grid" id="achievements-container">
-                        <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка достижений...</p>
-                    </div>
+                    <h3 style="text-align: center; color: #f59e0b; font-size: 1.4rem;">🏆 Наши достижения</h3>
+                    <div class="achievements-grid" id="achievements-container"></div>
                 </div>
             </section>
         </div>
@@ -269,108 +223,137 @@
         <div id="merch-tab" class="tab-content">
             <section class="section-block merch-section">
                 <h2>Фирменный Мерч APG</h2>
-                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:10px;">Фотографии нашей атрибутики, наклеек и одежды сообщества!</p>
-                <div class="merch-grid" id="merch-items-container">
-                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка фото мерча...</p>
-                </div>
+                <div class="merch-grid" id="merch-items-container"></div>
             </section>
         </div>
-
     </main>
 
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal-content">
-            <span class="close-modal-btn" onclick="closeAdminModal()">&times;</span>
-            
-            <div id="admin-auth-step">
-                <h3>Вход в панель управления</h3>
-                <input type="password" id="secret-code-input" placeholder="Введите секретный код...">
-                <button class="tg-button" onclick="checkSecretCode()">Войти</button>
-                <p id="auth-error-msg" class="error-text"></p>
+    <div id="admin-modal" class="admin-panel-modal">
+        <div class="admin-panel-content">
+            <div class="admin-panel-header">
+                <h2 style="color: #e11d48; margin: 0;">👑 Панель управления APG (Сайт)</h2>
+                <button class="close-admin-btn" onclick="closeAdminPanel()">✕</button>
             </div>
-
-            <div id="admin-panel-step" style="display: none; max-height: 80vh; overflow-y: auto; padding-right: 5px;">
-                <h3>Панель управления APG (Live База)</h3>
-                
-                <div class="admin-subform">
-                    <h4>Добавить фото в галерею APG</h4>
-                    <div class="file-input-wrapper">
-                        <label for="new-photo-file" class="file-input-label" id="file-label-text">📁 Выбрать файлы изображений</label>
-                        <input type="file" id="new-photo-file" accept="image/jpeg, image/png, image/jpg" multiple style="display:none;" onchange="handleMultipleFilesSelect(this, 'gallery')">
-                    </div>
-                    <input type="text" id="new-photo-desc" placeholder="Описание для фото (необязательно)">
-                    <button class="tg-button blue-btn" id="upload-photo-btn" onclick="uploadAllSelectedPhotos('gallery')">Добавить в галерею</button>
-                    <button class="tg-button" onclick="clearEntireGallery()" style="background: #e11d48; margin-top: 15px; font-weight: bold;">🚨 Удалить ВСЮ галерею</button>
+            
+            <div class="admin-grid">
+                <div class="admin-section">
+                    <h3 style="color: #00d2ff; margin-top:0;">🚗 Заявки на карточки участников</h3>
+                    <div id="admin-pending-cards" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        </div>
                 </div>
 
-                <div class="admin-subform">
-                    <h4>Добавить достижение (Грамоты, Награды)</h4>
-                    <div class="file-input-wrapper">
-                        <label for="new-achievement-file" class="file-input-label" id="achievement-file-label-text">🏆 Выбрать фото грамоты/награды</label>
-                        <input type="file" id="new-achievement-file" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="handleMultipleFilesSelect(this, 'achievements')">
-                    </div>
-                    <input type="text" id="new-achievement-title" placeholder="Описание (например: 1 место по автозвуку 2026)">
-                    <button class="tg-button" id="upload-achievement-btn" onclick="uploadAllSelectedPhotos('achievements')" style="background:#f59e0b; font-weight: bold;">Опубликовать достижение</button>
-                    <button class="tg-button" onclick="clearEntireAchievements()" style="background: #e11d48; margin-top: 15px; font-weight: bold;">🚨 Удалить ВСЕ достижения</button>
+                <div class="admin-section">
+                    <h3 style="color: #00d2ff; margin-top:0;">💬 Отзывы на модерации</h3>
+                    <div id="admin-pending-reviews">
+                        </div>
                 </div>
 
-                <div class="admin-subform">
-                    <h4>Добавить фото мерча в галерею</h4>
-                    <div class="file-input-wrapper">
-                        <label for="new-merch-file" class="file-input-label" id="merch-file-label-text">📁 Выбрать фото мерча (авто-сжатие)</label>
-                        <input type="file" id="new-merch-file" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="handleMultipleFilesSelect(this, 'merch')">
-                    </div>
-                    <input type="text" id="new-merch-title" placeholder="Описание к фото мерча (необязательно)">
-                    <button class="tg-button" id="upload-merch-btn" onclick="uploadAllSelectedPhotos('merch')" style="background:#22c55e;">Опубликовать в мерч</button>
-                    <button class="tg-button" onclick="clearEntireMerch()" style="background: #e11d48; margin-top: 15px; font-weight: bold;">🚨 Удалить ВЕСЬ Мерч</button>
-                </div>
-
-                <div class="admin-subform">
-                    <h4 id="service-form-title">Добавить услугу в общий список</h4>
-                    <input type="text" id="new-service-title" placeholder="Название услуги">
-                    <input type="text" id="new-service-price" placeholder="Цена (например: 4000 рублей)">
-                    <textarea id="new-service-desc" placeholder="Описание услуги..."></textarea>
-                    <input type="text" id="new-service-tg" placeholder="Telegram мастера">
-                    <input type="text" id="new-service-phone" placeholder="Телефон">
-                    
-                    <button class="tg-button" id="service-submit-btn" onclick="addNewService()">Добавить услугу</button>
-                    <button class="tg-button cancel-edit-btn" id="service-cancel-btn" onclick="cancelServiceEdit()" style="display:none;">Отменить редактирование</button>
-                </div>
-
-                <div class="admin-subform">
-                    <h4>Управление и удаление элементов</h4>
-                    <div id="admin-manage-lists"></div>
+                <div class="admin-section">
+                    <h3 style="color: #00d2ff; margin-top:0;">🔧 Добавить новую услугу на сайт</h3>
+                    <input type="text" id="add-serv-title" placeholder="Название услуги (например: Шиномонтаж)" style="width:100%; padding:10px; margin-bottom:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:6px;">
+                    <textarea id="add-serv-desc" placeholder="Описание..." style="width:100%; height:60px; padding:10px; margin-bottom:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:6px; resize:none;"></textarea>
+                    <input type="text" id="add-serv-price" placeholder="Цена (например: 1000 руб)" style="width:100%; padding:10px; margin-bottom:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:6px;">
+                    <input type="text" id="add-serv-tg" placeholder="Ник в ТГ куратора (например: @lenar_apg)" style="width:100%; padding:10px; margin-bottom:15px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:6px;">
+                    <button class="admin-action-btn" style="background:#22c55e;" onclick="adminAddNewService()">Добавить услугу</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2026 Auto Partners Group. Все права защищены.</p>
-    </footer>
-
     <script>
         const FIREBASE_URL = "https://apg-site-56d91-default-rtdb.firebaseio.com/";
-
-        const TG_BOT_TOKEN = ""; 
-        const TG_CHAT_ID = ""; 
+        const BOT_USERNAME = "apg_site_bot"; // Твой бот без знака @
 
         let globalServices = [];
         let globalReviews = [];
+        let allRawReviews = {}; // Для модерации
+        let allRawCards = {}; // Для модерации
         let globalPhotos = [];
         let globalMerch = [];
         let globalCards = []; 
-        let globalAchievements = []; // Массив для достижений (грамот)
+        let globalAchievements = [];
         
         let selectedReviewStars = 5;
-        let editingServiceId = null; 
-        let selectedFilesQueue = []; 
-        let selectedMerchFilesQueue = [];
-        let selectedAchievementFilesQueue = [];
         let selectedGenPhotoBase64 = null; 
         let isFirstLoadDone = false; 
+        let isAdminAuthorized = false;
 
-        // Загрузка данных из Firebase
+        // Авторизация пользователя
+        let authInterval = null;
+        let localToken = localStorage.getItem('apg_auth_token');
+        let currentUser = JSON.parse(localStorage.getItem('apg_user_data'));
+
+        if (localToken && currentUser) {
+            setAuthorizedState(currentUser.username);
+        }
+
+        // Проверка локальной сессии админа
+        if (localStorage.getItem('apg_admin_login') === 'true') {
+            isAdminAuthorized = true;
+        }
+
+        // Секретная комбинация клавиш (Ctrl + Shift + A) для входа в админку
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.code === 'KeyA') {
+                promptAdminLogin();
+            }
+        });
+
+        function promptAdminLogin() {
+            const pass = prompt("Введите секретный код администратора:");
+            if (pass === 'apg1') {
+                isAdminAuthorized = true;
+                localStorage.setItem('apg_admin_login', 'true');
+                openAdminPanel();
+            } else if (pass !== null) {
+                alert("❌ Доступ закрыт! Неверный код.");
+            }
+        }
+
+        function openAdminPanel() {
+            if (!isAdminAuthorized) return promptAdminLogin();
+            document.getElementById('admin-modal').style.display = 'block';
+            renderAdminPanelContent();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        function startTelegramAuth() {
+            const tempToken = 'token_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('apg_auth_token', tempToken);
+            const url = `https://t.me/${BOT_USERNAME}?start=auth_${tempToken}`;
+            window.open(url, '_blank');
+            authInterval = setInterval(() => checkAuthSession(tempToken), 3000);
+        }
+
+        async function checkAuthSession(token) {
+            try {
+                const res = await fetch(`${FIREBASE_URL}auth_sessions/${token}.json`);
+                const data = await res.json();
+                if (data && data.status === 'completed') {
+                    clearInterval(authInterval);
+                    localStorage.setItem('apg_user_data', JSON.stringify(data));
+                    setAuthorizedState(data.username);
+                    alert(`С возвращением, ${data.username}!`);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function setAuthorizedState(username) {
+            document.getElementById('auth-title').innerText = `👤 Привет, ${username}!`;
+            document.getElementById('auth-desc').innerText = `Вы вошли как участник APG Family`;
+            document.getElementById('auth-action-area').innerHTML = `<button class="tg-auth-btn" style="background:#e11d48;" onclick="logout()">Выйти</button>`;
+            document.getElementById('gen-nickname').value = username;
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        // Загрузка данных
         async function loadFirebaseData() {
             try {
                 const [resServices, resReviews, resPhotos, resMerch, resCards, resAchievements] = await Promise.all([
@@ -383,37 +366,29 @@
                 ]);
 
                 const [dataServices, dataReviews, dataPhotos, dataMerch, dataCards, dataAchievements] = await Promise.all([
-                    resServices.json(),
-                    resReviews.json(),
-                    resPhotos.json(),
-                    resMerch.json(),
-                    resCards.json(),
-                    resAchievements.json()
+                    resServices.json(), resReviews.json(), resPhotos.json(), resMerch.json(), resCards.json(), resAchievements.json()
                 ]);
 
+                allRawReviews = dataReviews || {};
+                allRawCards = dataCards || {};
+
                 globalServices = dataServices ? Object.keys(dataServices).map(key => ({...dataServices[key], firebaseId: key})) : [];
-                globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).reverse() : [];
+                globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).filter(r => r.status === 'approved').reverse() : [];
                 globalPhotos = dataPhotos ? Object.keys(dataPhotos).map(key => ({...dataPhotos[key], firebaseId: key})).reverse() : [];
                 globalMerch = dataMerch ? Object.keys(dataMerch).map(key => ({...dataMerch[key], firebaseId: key})).reverse() : [];
-                globalCards = dataCards ? Object.keys(dataCards).map(key => ({...dataCards[key], firebaseId: key})).reverse() : [];
+                globalCards = dataCards ? Object.keys(dataCards).map(key => ({...dataCards[key], firebaseId: key})).filter(c => c.status === 'approved').reverse() : [];
                 globalAchievements = dataAchievements ? Object.keys(dataAchievements).map(key => ({...dataAchievements[key], firebaseId: key})).reverse() : [];
 
                 isFirstLoadDone = true; 
                 renderData();
-                if(document.getElementById('adminModal').style.display === 'flex') {
-                    renderAdminControls();
+                if (isAdminAuthorized && document.getElementById('admin-modal').style.display === 'block') {
+                    renderAdminPanelContent();
                 }
-            } catch(e) {
-                console.error("Ошибка Firebase: ", e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         loadFirebaseData();
         setInterval(loadFirebaseData, 5000);
-
-        window.onload = () => {
-            setReviewStars(5);
-        };
 
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -426,36 +401,11 @@
             selectedReviewStars = count;
             const stars = document.querySelectorAll('#review-stars-select span');
             stars.forEach((star, index) => {
-                if(index < count) {
-                    star.classList.add('active');
-                } else {
-                    star.classList.remove('active');
-                }
+                if(index < count) star.classList.add('active');
+                else star.classList.remove('active');
             });
         }
 
-        function openAdminModal() { 
-            document.getElementById('adminModal').style.display = 'flex'; 
-            renderAdminControls(); 
-        }
-        
-        function closeAdminModal() { 
-            document.getElementById('adminModal').style.display = 'none'; 
-            document.getElementById('secret-code-input').value = ''; 
-            document.getElementById('auth-error-msg').innerText = ''; 
-            cancelServiceEdit();
-        }
-        
-        function checkSecretCode() {
-            if (document.getElementById('secret-code-input').value === 'apg1') {
-                document.getElementById('admin-auth-step').style.display = 'none';
-                document.getElementById('admin-panel-step').style.display = 'block';
-            } else {
-                document.getElementById('auth-error-msg').innerText = 'Неверный код!';
-            }
-        }
-
-        // Отрисовка контента
         function renderData() {
             if (!isFirstLoadDone) return;
 
@@ -464,182 +414,171 @@
             document.getElementById('gallery-tab-btn').innerText = `Галерея (${globalPhotos.length + globalAchievements.length})`;
             document.getElementById('merch-tab-btn').innerText = `Мерч APG (${globalMerch.length})`;
 
-            // Отрисовка услуг
+            // Услуги
             let servicesHtml = '';
             globalServices.forEach((s, index) => {
                 let price = s.price ? `<p class="price-tag">Стоимость: ${s.price}</p>` : '';
-                let extra = s.extraBtn ? `<a href="${s.extraBtn.link}" target="_blank" class="tg-button prestige-btn">${s.extraBtn.text}</a>` : '';
                 let tg = s.tg ? `<a href="https://t.me/${s.tg.replace('@','')}" target="_blank" class="tg-button blue-btn">Написать ${s.tg}</a>` : '';
-                let phone = s.phone ? `<a href="tel:${s.phone}" class="phone-button">Позвонить ${s.phone}</a>` : '';
-
+                let deleteBtn = isAdminAuthorized ? `<button class="admin-action-btn" onclick="deleteItem('services', '${s.firebaseId}')">🗑 Удалить</button>` : '';
+                
                 servicesHtml += `
-                    <div class="service-card ${index % 2 !== 0 ? 'tuning-card' : ''}">
+                    <div class="service-card">
                         <div class="service-details">
-                            <h3>№${index + 1}. ${s.title}</h3>
+                            <h3>№${index + 1}. ${s.title} ${isAdminAuthorized ? '<span class="admin-badge">Админ</span>' : ''}</h3>
                             ${price}
                             <p>${s.desc}</p>
+                            ${deleteBtn}
                         </div>
-                        <div class="service-order">
-                            <h4>Контакты и запись:</h4>
-                            ${extra} ${tg} ${phone}
-                        </div>
+                        <div class="service-order">${tg}</div>
                     </div>`;
             });
-            document.getElementById('services-list-container').innerHTML = servicesHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">Список услуг пуст</p>';
+            document.getElementById('services-list-container').innerHTML = servicesHtml || '<p>Услуг пока нет.</p>';
 
-            // Отрисовка отзывов
+            // Отзывы
             let reviewsHtml = '';
             globalReviews.forEach((r) => {
                 let starsString = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+                let deleteBtn = isAdminAuthorized ? `<button class="admin-action-btn" style="position:absolute; bottom:15px; right:15px;" onclick="deleteItem('reviews', '${r.firebaseId}')">🗑 Удалить</button>` : '';
+                
                 reviewsHtml += `
                     <div class="review-card">
                         <div class="review-header">
-                            <span class="review-author">👤 ${r.author}</span>
+                            <span class="review-author">👤 ${r.author} ${isAdminAuthorized ? '<span class="admin-badge">Админ</span>' : ''}</span>
                             <span class="review-stars">${starsString}</span>
                         </div>
                         <p class="review-text">${r.text}</p>
-                        <div style="text-align:right; margin-top:5px;"><span class="review-date">${r.date || ''}</span></div>
+                        ${deleteBtn}
                     </div>`;
             });
-            document.getElementById('reviews-list-container').innerHTML = reviewsHtml || '<p style="text-align:center; color:#64748b; padding: 20px;">Отзывов пока нет. Будьте первым!</p>';
+            document.getElementById('reviews-list-container').innerHTML = reviewsHtml || '<p>Будьте первым, кто оставит отзыв!</p>';
 
-            // Отрисовка галереи (по 2 в ряд)
+            // Галерея
             let galleryHtml = '';
             globalPhotos.forEach((p) => {
-                galleryHtml += `
-                    <div class="gallery-item">
-                        <img src="${p.url}" alt="${p.desc || 'Фото APG'}" onerror="this.src='https://placehold.co/400x300/1e293b/00d2ff?text=Ошибка'">
-                        ${p.desc ? `<div class="photo-caption">${p.desc}</div>` : ''}
-                    </div>`;
+                let deleteBtn = isAdminAuthorized ? `<button class="admin-action-btn" style="position:absolute; top:10px; right:10px; z-index:10;" onclick="deleteItem('gallery', '${p.firebaseId}')">🗑</button>` : '';
+                galleryHtml += `<div class="gallery-item">${deleteBtn}<img src="${p.url}">${p.desc ? `<div class="photo-caption">${p.desc}</div>` : ''}</div>`;
             });
-            document.getElementById('gallery-images-container').innerHTML = galleryHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">В галерее пока нет фотографий</p>';
+            document.getElementById('gallery-images-container').innerHTML = galleryHtml || '<p>Галерея пуста.</p>';
 
-            // Отрисовка достижений
+            // Награды
             let achievementsHtml = '';
             globalAchievements.forEach((a) => {
-                achievementsHtml += `
-                    <div class="achievement-item">
-                        <img src="${a.url}" alt="${a.title || 'Достижение APG'}" onerror="this.src='https://placehold.co/400x560/1e293b/00d2ff?text=Ошибка'">
-                        ${a.title ? `<div class="photo-caption">${a.title}</div>` : ''}
-                    </div>`;
+                let deleteBtn = isAdminAuthorized ? `<button class="admin-action-btn" style="position:absolute; top:10px; right:10px; z-index:10;" onclick="deleteItem('achievements', '${a.firebaseId}')">🗑</button>` : '';
+                achievementsHtml += `<div class="achievement-item">${deleteBtn}<img src="${a.url}">${a.title ? `<div class="photo-caption">${a.title}</div>` : ''}</div>`;
             });
-            document.getElementById('achievements-container').innerHTML = achievementsHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Наград и грамот пока нет. Скоро загрузим!</p>';
+            document.getElementById('achievements-container').innerHTML = achievementsHtml || '<p>Наград пока нет.</p>';
 
-            // Отрисовка галереи мерча
-            let merchHtml = '';
-            globalMerch.forEach((m) => {
-                merchHtml += `
-                    <div class="merch-item">
-                        <img src="${m.url}" alt="${m.title || 'Мерч APG'}" onerror="this.src='https://placehold.co/400x300/1e293b/00d2ff?text=Ошибка'">
-                        ${m.title ? `<div class="photo-caption">${m.title}</div>` : ''}
-                    </div>`;
-            });
-            document.getElementById('merch-items-container').innerHTML = merchHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Фото мерча пока отсутствуют</p>';
-
-            // Отрисовка галереи участников (клубные карточки)
+            // Карточки
             let cardsHtml = '';
             globalCards.forEach((c) => {
-                cardsHtml += `
-                    <div class="card-gallery-item">
-                        <img src="${c.url}" alt="Карточка участника" onerror="this.src='https://placehold.co/400x560/1e293b/00d2ff?text=Ошибка'">
-                    </div>`;
+                let deleteBtn = isAdminAuthorized ? `<button class="admin-action-btn" style="position:absolute; top:10px; right:10px; z-index:10;" onclick="deleteItem('cards', '${c.firebaseId}')">🗑</button>` : '';
+                cardsHtml += `<div class="card-gallery-item" style="position:relative;">${deleteBtn}<img src="${c.url}"></div>`;
             });
-            document.getElementById('club-cards-container').innerHTML = cardsHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Клубных карточек еще никто не сгенерировал. Создай первую!</p>';
+            document.getElementById('club-cards-container').innerHTML = cardsHtml || '<p>Будьте первым, кто создаст карточку!</p>';
+        }
+
+        // Рендеринг внутренней админки сайта
+        function renderAdminPanelContent() {
+            // Модерация карточек
+            let pendingCardsHtml = '';
+            Object.keys(allRawCards).forEach(key => {
+                const card = allRawCards[key];
+                if (card.status === 'pending') {
+                    pendingCardsHtml += `
+                        <div class="review-card" style="text-align:center;">
+                            <img src="${card.url}" style="width:100%; max-height:200px; object-fit:contain; border-radius:8px;">
+                            <p style="margin:5px 0; font-size:0.85rem;">@${card.author} (${card.car})</p>
+                            <button class="admin-action-btn" style="background:#22c55e; margin-right:5px;" onclick="approveItem('cards', '${key}')">✅ Одобрить</button>
+                            <button class="admin-action-btn" onclick="deleteItem('cards', '${key}')">❌ Отклонить</button>
+                        </div>`;
+                }
+            });
+            document.getElementById('admin-pending-cards').innerHTML = pendingCardsHtml || '<p style="grid-column: span 2; color:#64748b;">Нет новых заявок на карточки</p>';
+
+            // Модерация отзывов
+            let pendingReviewsHtml = '';
+            Object.keys(allRawReviews).forEach(key => {
+                const r = allRawReviews[key];
+                if (r.status === 'pending') {
+                    pendingReviewsHtml += `
+                        <div class="review-card">
+                            <p><b>Автор:</b> ${r.author} (★ ${r.stars})</p>
+                            <p>${r.text}</p>
+                            <button class="admin-action-btn" style="background:#22c55e; margin-right:5px;" onclick="approveItem('reviews', '${key}')">✅ Одобрить</button>
+                            <button class="admin-action-btn" onclick="deleteItem('reviews', '${key}')">❌ Отклонить</button>
+                        </div>`;
+                }
+            });
+            document.getElementById('admin-pending-reviews').innerHTML = pendingReviewsHtml || '<p style="color:#64748b;">Нет новых отзывов на проверку</p>';
+        }
+
+        // Операции модерирования
+        async function approveItem(path, id) {
+            await fetch(`${FIREBASE_URL}${path}/${id}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'approved' })
+            });
+            loadFirebaseData();
+        }
+
+        async function deleteItem(path, id) {
+            if(confirm("Удалить этот элемент навсегда?")) {
+                await fetch(`${FIREBASE_URL}${path}/${id}.json`, { method: 'DELETE' });
+                loadFirebaseData();
+            }
+        }
+
+        async function adminAddNewService() {
+            const title = document.getElementById('add-serv-title').value.trim();
+            const desc = document.getElementById('add-serv-desc').value.trim();
+            const price = document.getElementById('add-serv-price').value.trim();
+            const tg = document.getElementById('add-serv-tg').value.trim();
+
+            if (!title || !desc) return alert("Заполните название и описание услуги!");
+
+            await fetch(`${FIREBASE_URL}services.json`, {
+                method: 'POST',
+                body: JSON.stringify({ title, desc, price, tg })
+            });
+
+            document.getElementById('add-serv-title').value = '';
+            document.getElementById('add-serv-desc').value = '';
+            document.getElementById('add-serv-price').value = '';
+            document.getElementById('add-serv-tg').value = '';
+            
+            alert("✅ Услуга успешно опубликована на сайте!");
+            loadFirebaseData();
         }
 
         async function sendUserReview() {
             const author = document.getElementById('review-author-input').value.trim();
             const text = document.getElementById('review-text-input').value.trim();
-            
-            if(!author || !text) return alert('Пожалуйста, введите ваше имя и текст отзыва!');
-            
-            const options = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
-            const dateStr = new Date().toLocaleDateString('ru-RU', options);
+            if(!author || !text) return alert('Пожалуйста, заполните поля!');
 
-            const reviewData = { author, text, stars: selectedReviewStars, date: dateStr };
-
+            const reviewData = { author, text, stars: selectedReviewStars, status: 'pending' };
             await fetch(`${FIREBASE_URL}reviews.json`, { method: 'POST', body: JSON.stringify(reviewData) });
 
-            document.getElementById('review-author-input').value = '';
             document.getElementById('review-text-input').value = '';
-            setReviewStars(5);
-            loadFirebaseData();
-            alert('Спасибо! Ваш отзыв добавлен на стену.');
+            alert('Ваш отзыв отправлен на модерацию!');
         }
 
-        // Выбор файлов
-        function handleMultipleFilesSelect(input, target) {
-            const files = input.files;
-            if (!files || files.length === 0) return;
-            
-            if (target === 'gallery') {
-                selectedFilesQueue = Array.from(files);
-                document.getElementById('file-label-text').innerText = `✅ Выбрано фото: ${files.length}. Готовы к жесткому сжатию.`;
-            } else if (target === 'merch') {
-                selectedMerchFilesQueue = Array.from(files);
-                document.getElementById('merch-file-label-text').innerText = `✅ Выбрано фото мерча: ${files.length}.`;
-            } else if (target === 'achievements') {
-                selectedAchievementFilesQueue = Array.from(files);
-                document.getElementById('achievement-file-label-text').innerText = `✅ Выбрана грамота/награда.`;
-            }
-        }
-
-        // Сжатие картинок
-        function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const MAX_WIDTH = 800; 
-
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5); 
-                        resolve(compressedBase64);
-                    };
-                };
-            });
-        }
-
-        // Загрузка фото автомобиля
         function handleGenPhotoSelect(input) {
             const file = input.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (e) => {
                 selectedGenPhotoBase64 = e.target.result;
-                document.getElementById('gen-file-label-text').innerText = `✅ Автомобиль успешно загружен!`;
+                document.getElementById('gen-file-label-text').innerText = `✅ Изображение загружено!`;
             };
         }
 
-        // Генерация карточки APG FAMILY и автозагрузка в базу
         function generateClubCard() {
             const nickname = document.getElementById('gen-nickname').value.trim();
             const car = document.getElementById('gen-car').value.trim();
             const role = document.getElementById('gen-role').value;
 
-            if(!nickname || !car) {
-                return alert('Пожалуйста, введите никнейм и модель автомобиля!');
-            }
-            if(!selectedGenPhotoBase64) {
-                return alert('Пожалуйста, загрузите фотографию своего авто!');
-            }
+            if(!nickname || !car || !selectedGenPhotoBase64) return alert('Заполните все данные и выберите фото!');
 
             const canvas = document.getElementById('clubCardCanvas');
             const ctx = canvas.getContext('2d');
@@ -647,58 +586,17 @@
             ctx.fillStyle = '#0a0f1d';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Сетка
-            ctx.strokeStyle = 'rgba(0, 210, 255, 0.05)';
-            ctx.lineWidth = 1;
-            for(let i = 0; i < canvas.width; i += 40) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-            }
-            for(let j = 0; j < canvas.height; j += 40) {
-                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
-            }
-
             const carImg = new Image();
             carImg.src = selectedGenPhotoBase64;
             carImg.onload = async () => {
-                const photoX = 40;
-                const photoY = 160;
-                const photoWidth = 520;
-                const photoHeight = 390;
+                ctx.drawImage(carImg, 40, 160, 520, 390);
 
-                ctx.strokeStyle = '#00d2ff';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(photoX, photoY, photoWidth, photoHeight);
-
-                const imgRatio = carImg.width / carImg.height;
-                const areaRatio = photoWidth / photoHeight;
-                let sx, sy, sWidth, sHeight;
-
-                if (imgRatio > areaRatio) {
-                    sHeight = carImg.height;
-                    sWidth = carImg.height * areaRatio;
-                    sx = (carImg.width - sWidth) / 2;
-                    sy = 0;
-                } else {
-                    sWidth = carImg.width;
-                    sHeight = carImg.width / areaRatio;
-                    sx = 0;
-                    sy = (carImg.height - sHeight) / 2;
-                }
-                ctx.drawImage(carImg, sx, sy, sWidth, sHeight, photoX, photoY, photoWidth, photoHeight);
-
-                // Декор и неон
                 ctx.strokeStyle = '#e11d48';
                 ctx.lineWidth = 5;
                 ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-                ctx.strokeStyle = 'rgba(0, 210, 255, 0.5)';
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
-
-                // Текст шапки
                 ctx.fillStyle = '#fff';
                 ctx.font = '900 28px sans-serif';
-                ctx.textAlign = 'left';
                 ctx.fillText("AUTO PARTNERS GROUP", 50, 80);
 
                 ctx.fillStyle = '#00d2ff';
@@ -706,328 +604,42 @@
                 ctx.fillText("OFFICIAL CLUB MEMBER", 50, 110);
 
                 const logoImg = document.getElementById('club-logo-source');
-                if (logoImg) {
-                    ctx.drawImage(logoImg, canvas.width - 120, 45, 75, 75);
-                }
+                if (logoImg) ctx.drawImage(logoImg, canvas.width - 120, 45, 75, 75);
 
-                const textStartY = 590;
-
-                // Драйвер
-                ctx.fillStyle = '#64748b';
-                ctx.font = 'bold 14px sans-serif';
-                ctx.fillText("DRIVER / НИК", 50, textStartY);
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '900 26px sans-serif';
-                ctx.fillText(nickname.toUpperCase(), 50, textStartY + 35);
+                ctx.fillText(nickname.toUpperCase(), 50, 625);
 
-                // Машина
-                ctx.fillStyle = '#64748b';
-                ctx.font = 'bold 14px sans-serif';
-                ctx.fillText("RIDE / АВТОМОБИЛЬ", 50, textStartY + 85);
                 ctx.fillStyle = '#00d2ff';
                 ctx.font = '900 24px sans-serif';
-                ctx.fillText(car.toUpperCase(), 50, textStartY + 115);
+                ctx.fillText(car.toUpperCase(), 50, 710);
 
-                // Плашка роли
-                const roleX = 50;
-                const roleY = 745;
                 ctx.fillStyle = '#e11d48';
-                ctx.fillRect(roleX, roleY, 500, 50);
-
+                ctx.fillRect(50, 745, 500, 50);
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '900 22px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(role, canvas.width / 2, roleY + 33);
+                ctx.fillText(role, canvas.width / 2, 778);
 
                 const finalBase64 = canvas.toDataURL('image/jpeg', 0.6);
                 document.getElementById('generatedImgElement').src = finalBase64;
-
                 document.getElementById('generator-preview-container').style.display = 'block';
-                document.getElementById('generator-preview-container').scrollIntoView({ behavior: 'smooth' });
 
-                try {
-                    await fetch(`${FIREBASE_URL}cards.json`, {
-                        method: 'POST',
-                        body: JSON.stringify({ url: finalBase64, author: nickname })
-                    });
-                    loadFirebaseData();
-                } catch(err) {
-                    console.error("Ошибка автосохранения карточки:", err);
-                }
+                await fetch(`${FIREBASE_URL}cards.json`, {
+                    method: 'POST',
+                    body: JSON.stringify({ url: finalBase64, author: nickname, car: car, role: role, status: 'pending' })
+                });
+
+                alert('Карточка успешно отправлена на модерацию!');
             };
         }
 
-        // Скачивание визитки
         function downloadClubCard() {
             const img = document.getElementById('generatedImgElement');
             const link = document.createElement('a');
             link.download = 'APG_Family_Card.jpg';
             link.href = img.src;
             link.click();
-        }
-
-        // Пакетная загрузка
-        async function uploadAllSelectedPhotos(target) {
-            let queue = [];
-            let btnId = '';
-            
-            if (target === 'gallery') {
-                queue = selectedFilesQueue;
-                btnId = 'upload-photo-btn';
-            } else if (target === 'merch') {
-                queue = selectedMerchFilesQueue;
-                btnId = 'upload-merch-btn';
-            } else if (target === 'achievements') {
-                queue = selectedAchievementFilesQueue;
-                btnId = 'upload-achievement-btn';
-            }
-
-            let btn = document.getElementById(btnId);
-
-            if (queue.length === 0) {
-                return alert('Пожалуйста, сначала выберите фото-файл!');
-            }
-
-            btn.disabled = true;
-            
-            if (target === 'gallery') {
-                const desc = document.getElementById('new-photo-desc').value.trim();
-                for (let i = 0; i < queue.length; i++) {
-                    const file = queue[i];
-                    btn.innerText = `⚙️ Загрузка: ${i + 1} из ${queue.length}...`;
-                    try {
-                        const compressedBase64 = await compressImage(file);
-                        await fetch(`${FIREBASE_URL}gallery.json`, {
-                            method: 'POST',
-                            body: JSON.stringify({ url: compressedBase64, desc: desc })
-                        });
-                    } catch (e) { console.error(e); }
-                }
-                selectedFilesQueue = [];
-                document.getElementById('new-photo-file').value = "";
-                document.getElementById('file-label-text').innerText = "📁 Выбрать файлы изображений";
-                document.getElementById('new-photo-desc').value = '';
-                btn.innerText = "Добавить в галерею";
-
-            } else if (target === 'merch') {
-                const title = document.getElementById('new-merch-title').value.trim();
-                btn.innerText = `⚙️ Сжатие фото мерча...`;
-                try {
-                    const compressedBase64 = await compressImage(queue[0]);
-                    await fetch(`${FIREBASE_URL}merch.json`, {
-                        method: 'POST',
-                        body: JSON.stringify({ url: compressedBase64, title: title || '' })
-                    });
-                } catch (e) { console.error(e); }
-
-                selectedMerchFilesQueue = [];
-                document.getElementById('new-merch-file').value = "";
-                document.getElementById('new-merch-title').value = "";
-                document.getElementById('merch-file-label-text').innerText = "📁 Выбрать фото мерча (авто-сжатие)";
-                btn.innerText = "Опубликовать в мерч";
-
-            } else if (target === 'achievements') {
-                const title = document.getElementById('new-achievement-title').value.trim();
-                btn.innerText = `⚙️ Загрузка достижения...`;
-                try {
-                    const compressedBase64 = await compressImage(queue[0]);
-                    await fetch(`${FIREBASE_URL}achievements.json`, {
-                        method: 'POST',
-                        body: JSON.stringify({ url: compressedBase64, title: title || '' })
-                    });
-                } catch (e) { console.error(e); }
-
-                selectedAchievementFilesQueue = [];
-                document.getElementById('new-achievement-file').value = "";
-                document.getElementById('new-achievement-title').value = "";
-                document.getElementById('achievement-file-label-text').innerText = "🏆 Выбрать фото грамоты/награды";
-                btn.innerText = "Опубликовать достижение";
-            }
-
-            btn.disabled = false;
-            loadFirebaseData();
-            alert('Успешно загружено!');
-        }
-
-        // Очистки баз
-        async function clearEntireGallery() {
-            if (!confirm('⚠️ ВНИМАНИЕ! Полностью удалить ВСЕ фото из галереи?')) return;
-            try {
-                await fetch(`${FIREBASE_URL}gallery.json`, { method: 'DELETE' });
-                alert('Галерея очищена!');
-                loadFirebaseData();
-            } catch (e) { alert('Ошибка!'); }
-        }
-
-        async function clearEntireMerch() {
-            if (!confirm('⚠️ Вы действительно хотите очистить всю витрину мерча?')) return;
-            try {
-                await fetch(`${FIREBASE_URL}merch.json`, { method: 'DELETE' });
-                alert('Витрина мерча очищена!');
-                loadFirebaseData();
-            } catch (e) { alert('Ошибка!'); }
-        }
-
-        async function clearEntireAchievements() {
-            if (!confirm('⚠️ Удалить ВСЕ достижения и грамоты?')) return;
-            try {
-                await fetch(`${FIREBASE_URL}achievements.json`, { method: 'DELETE' });
-                alert('Достижения очищены!');
-                loadFirebaseData();
-            } catch (e) { alert('Ошибка!'); }
-        }
-
-        // Добавление / Изменение услуг
-        async function addNewService() {
-            const title = document.getElementById('new-service-title').value.trim();
-            const price = document.getElementById('new-service-price').value.trim();
-            const desc = document.getElementById('new-service-desc').value.trim();
-            let tg = document.getElementById('new-service-tg').value.trim();
-            const phone = document.getElementById('new-service-phone').value.trim();
-            
-            if(!title || !desc) return alert('Заполните название и описание!');
-            if(tg && !tg.startsWith('@')) tg = '@' + tg;
-
-            const serviceData = { title, price, desc, tg, phone };
-
-            if (editingServiceId) {
-                await fetch(`${FIREBASE_URL}services/${editingServiceId}.json`, { method: 'PUT', body: JSON.stringify(serviceData) });
-                editingServiceId = null;
-                alert('Услуга успешно обновлена!');
-            } else {
-                await fetch(`${FIREBASE_URL}services.json`, { method: 'POST', body: JSON.stringify(serviceData) });
-            }
-            
-            cancelServiceEdit();
-            loadFirebaseData();
-        }
-
-        function startEditService(firebaseId) {
-            const service = globalServices.find(s => s.firebaseId === firebaseId);
-            if(!service) return;
-
-            editingServiceId = firebaseId;
-
-            document.getElementById('new-service-title').value = service.title || '';
-            document.getElementById('new-service-price').value = service.price || '';
-            document.getElementById('new-service-desc').value = service.desc || '';
-            document.getElementById('new-service-tg').value = service.tg || '';
-            document.getElementById('new-service-phone').value = service.phone || '';
-
-            document.getElementById('service-form-title').innerText = '✍️ Редактировать услугу';
-            document.getElementById('service-form-title').style.color = '#e11d48';
-            document.getElementById('service-submit-btn').innerText = 'Сохранить изменения';
-            document.getElementById('service-submit-btn').classList.add('edit-badge');
-            document.getElementById('service-cancel-btn').style.display = 'block';
-
-            document.getElementById('admin-panel-step').scrollTop = 0;
-        }
-
-        function cancelServiceEdit() {
-            editingServiceId = null;
-            document.getElementById('new-service-title').value = '';
-            document.getElementById('new-service-price').value = '';
-            document.getElementById('new-service-desc').value = '';
-            document.getElementById('new-service-tg').value = '';
-            document.getElementById('new-service-phone').value = '';
-
-            document.getElementById('service-form-title').innerText = 'Добавить услугу в общий список';
-            document.getElementById('service-form-title').style.color = '#fff';
-            document.getElementById('service-submit-btn').innerText = 'Добавить услугу';
-            document.getElementById('service-submit-btn').classList.remove('edit-badge');
-            document.getElementById('service-cancel-btn').style.display = 'none';
-        }
-
-        async function removePhoto(firebaseId) {
-            if(!confirm('Удалить эту фотографию из галереи?')) return;
-            await fetch(`${FIREBASE_URL}gallery/${firebaseId}.json`, { method: 'DELETE' });
-            loadFirebaseData();
-        }
-
-        async function removeMerch(firebaseId) {
-            if(!confirm('Удалить эту фотографию из мерча?')) return;
-            await fetch(`${FIREBASE_URL}merch/${firebaseId}.json`, { method: 'DELETE' });
-            loadFirebaseData();
-        }
-
-        async function removeAchievement(firebaseId) {
-            if(!confirm('Удалить эту грамоту/диплом?')) return;
-            await fetch(`${FIREBASE_URL}achievements/${firebaseId}.json`, { method: 'DELETE' });
-            loadFirebaseData();
-        }
-
-        async function removeService(firebaseId) {
-            if(!confirm('Удалить эту услугу навсегда?')) return;
-            await fetch(`${FIREBASE_URL}services/${firebaseId}.json`, { method: 'DELETE' });
-            if (editingServiceId === firebaseId) cancelServiceEdit();
-            loadFirebaseData();
-        }
-
-        async function removeReview(firebaseId) {
-            if(!confirm('Удалить этот отзыв со стены?')) return;
-            await fetch(`${FIREBASE_URL}reviews/${firebaseId}.json`, { method: 'DELETE' });
-            loadFirebaseData();
-        }
-
-        async function removeCard(firebaseId) {
-            if(!confirm('Удалить эту клубную карточку из галереи участников?')) return;
-            await fetch(`${FIREBASE_URL}cards/${firebaseId}.json`, { method: 'DELETE' });
-            loadFirebaseData();
-        }
-
-        // Отрисовка списков модерации в админке
-        function renderAdminControls() {
-            let html = '<p style="font-size:0.9rem; color:#00d2ff; margin-bottom:5px;">Галерея APG:</p>';
-            globalPhotos.forEach((p) => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>🖼️ ${p.desc ? p.desc.substring(0, 20) : 'Фото без названия'}</span>
-                    <button onclick="removePhoto('${p.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
-                </div>`;
-            });
-
-            html += '<p style="font-size:0.9rem; color:#f59e0b; margin-top:15px; margin-bottom:5px;">Наши достижения (грамоты):</p>';
-            globalAchievements.forEach((a) => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>🏆 ${a.title ? a.title.substring(0, 20) : 'Грамота без описания'}</span>
-                    <button onclick="removeAchievement('${a.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
-                </div>`;
-            });
-
-            html += '<p style="font-size:0.9rem; color:#d946ef; margin-top:15px; margin-bottom:5px;">Фотоподкладка мерча:</p>';
-            globalMerch.forEach((m) => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>👕 ${m.title ? m.title.substring(0, 20) : 'Мерч фото'}</span>
-                    <button onclick="removeMerch('${m.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
-                </div>`;
-            });
-
-            html += '<p style="font-size:0.9rem; color:#38bdf8; margin-top:15px; margin-bottom:5px;">Клубные карточки участников:</p>';
-            globalCards.forEach((c) => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>🎴 Карточка: ${c.author || 'Без автора'}</span>
-                    <button onclick="removeCard('${c.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
-                </div>`;
-            });
-
-            html += '<p style="font-size:0.9rem; color:#22c55e; margin-top:15px; margin-bottom:5px;">Все услуги в списке:</p>';
-            globalServices.forEach((s, i) => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>№${i+1}. ${s.title.substring(0,25)}...</span>
-                    <div style="display:flex; gap:5px;">
-                        <button onclick="startEditService('${s.firebaseId}')" style="background:#f59e0b; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Редакт.</button>
-                        <button onclick="removeService('${s.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
-                    </div>
-                </div>`;
-            });
-
-            html += '<p style="font-size:0.9rem; color:#f59e0b; margin-top:15px; margin-bottom:5px;">Модерация отзывов:</p>';
-            globalReviews.forEach((r) => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>⭐${r.stars} <b>${r.author}:</b> ${r.text.substring(0,25)}...</span>
-                    <button onclick="removeReview('${r.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
-                </div>`;
-            });
-            document.getElementById('admin-manage-lists').innerHTML = html;
         }
     </script>
 </body>

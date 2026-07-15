@@ -1,0 +1,13 @@
+{
+  "name": "apg-telegram-bot",
+  "version": "1.0.0",
+  "description": "APG Telegram Bot and Website Integration",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.8.0",
+    "node-telegram-bot-api": "^0.61.0"
+  }
+}
