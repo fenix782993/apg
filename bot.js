@@ -6,7 +6,7 @@ const token = '8631684388:AAGZ87I7RTu0pXLPw9SLdkPyaSPGHXVwHzk';
 const bot = new TelegramBot(token, { polling: true });
 
 // === НАСТРОЙКИ КЛУБА ===
-const CLUB_CHANNEL_ID = '@Auto_Partners_Group'; 
+const CLUB_CHANNEL_ID = '@APGsiteRobot'; 
 
 // 2. Инициализация Firebase
 let serviceAccount;
