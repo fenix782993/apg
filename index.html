@@ -19,24 +19,25 @@
         .reviews-container { max-width: 800px; margin: 0 auto; }
         .write-review-block { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(0, 210, 255, 0.2); padding: 20px; border-radius: 16px; margin-bottom: 25px; }
 
-        /* Стили для галереи APG и Мерча (Сетка: ровно 2 фото в ряд) */
-        .gallery-grid, .merch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
-        .gallery-item, .merch-item { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; aspect-ratio: 4/3; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .gallery-item img, .merch-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; display: block; }
-        .gallery-item:hover img, .merch-item:hover img { transform: scale(1.05); }
-        .gallery-item .photo-caption, .merch-item .photo-caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 10px; font-size: 0.9rem; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        /* Сетки для галерей (ровно 2 фото в ряд) */
+        .gallery-grid, .merch-grid, .cards-grid, .achievements-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .gallery-item, .merch-item, .card-gallery-item, .achievement-item { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #0f172a; aspect-ratio: 4/3; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
+        /* Соотношение сторон под вертикальный формат карточек и грамот */
+        .card-gallery-item { aspect-ratio: 1 / 1.41; } 
+        .achievement-item { aspect-ratio: 1 / 1.41; } /* Вертикальный формат для грамот */
 
-        /* Детали карточки товара в Мерче */
-        .merch-details { position: absolute; top: 10px; left: 10px; background: rgba(0, 210, 255, 0.9); color: #000; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 2px 10px rgba(0,210,255,0.4); }
-        .merch-order-btn { position: absolute; top: 10px; right: 10px; background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: background 0.2s; text-decoration: none; }
-        .merch-order-btn:hover { background: #16a34a; }
+        .gallery-item img, .merch-item img, .card-gallery-item img, .achievement-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; display: block; }
+        .gallery-item:hover img, .merch-item:hover img, .card-gallery-item:hover img, .achievement-item:hover img { transform: scale(1.05); }
+        .gallery-item .photo-caption, .merch-item .photo-caption, .achievement-item .photo-caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 10px; font-size: 0.9rem; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
 
         /* Конструктор карточек «APG FAMILY» */
         .card-generator-block { background: rgba(15, 23, 42, 0.7); border: 2px solid #00d2ff; padding: 25px; border-radius: 20px; max-width: 600px; margin: 0 auto; box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); }
         .card-generator-block input, .card-generator-block select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; margin-bottom: 15px; font-size: 0.95rem; }
         .card-generator-block select { cursor: pointer; }
         .generator-preview-container { text-align: center; margin-top: 25px; display: none; }
-        .generator-preview-container canvas { max-width: 100%; border-radius: 12px; border: 2px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); background: #0c101b; }
+        .generator-preview-container canvas { max-width: 100%; border-radius: 12px; border: 2px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); background: #0c101b; display: none; }
+        .generated-result-img { max-width: 100%; border-radius: 12px; border: 2px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
 
         /* Элементы управления редактированием */
         .edit-badge { background: #e11d48 !important; }
@@ -47,9 +48,12 @@
         .file-input-label { display: block; padding: 10px; background: #1e293b; border: 1px dashed rgba(255,255,255,0.2); text-align: center; border-radius: 8px; cursor: pointer; color: #cbd5e1; font-size: 0.9rem; transition: background 0.2s; }
         .file-input-label:hover { background: #334155; border-color: #00d2ff; }
 
-        /* Стили для адаптивности вкладок на мобильных устройствах */
+        /* Адаптивность вкладок на мобильных устройствах */
         .navigation-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .navigation-tabs .tab-btn { flex: 1 1 calc(33.33% - 8px); min-width: 110px; font-size: 0.85rem; padding: 8px 5px; text-align: center; }
+
+        /* Подразделы в Галерее */
+        .gallery-sub-section { margin-top: 35px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
     </style>
 </head>
 <body>
@@ -129,7 +133,7 @@
         <div id="card-tab" class="tab-content">
             <section class="section-block">
                 <h2>Генератор карточек «APG FAMILY»</h2>
-                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:20px;">Создай свою стильную клубную карточку в стиле Need For Speed и поделись ей в чате или соцсетях!</p>
+                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:20px;">Создай свою стильную клубную карточку, скачай её и попади в общую галерею участников клуба!</p>
                 
                 <div class="card-generator-block">
                     <label style="color:#00d2ff; font-weight:bold; font-size:0.9rem; display:block; margin-bottom:5px;">Твой Никнейм / Telegram:</label>
@@ -141,6 +145,7 @@
                     <label style="color:#00d2ff; font-weight:bold; font-size:0.9rem; display:block; margin-bottom:5px;">Твоя роль в банде:</label>
                     <select id="gen-role">
                         <option value="СУЕТОЛОГ">🔥 СУЕТОЛОГ</option>
+                        <option value="СТАТИСТ">📊 СТАТИСТ</option>
                         <option value="АВТОЗВУКЕР">🔊 АВТОЗВУКЕР</option>
                         <option value="ДРИФТЕР">💨 ДРИФТЕР</option>
                         <option value="МЕХАНИК">🔧 МЕХАНИК</option>
@@ -155,14 +160,23 @@
                         <input type="file" id="gen-photo-file" accept="image/*" style="display:none;" onchange="handleGenPhotoSelect(this)">
                     </div>
 
-                    <button class="tg-button blue-btn" onclick="generateClubCard()" style="margin-top:10px; font-weight:bold; font-size:1.05rem;">⚡ Создать Карточку</button>
+                    <button class="tg-button blue-btn" onclick="generateClubCard()" style="margin-top:10px; font-weight:bold; font-size:1.05rem;">⚡ Создать и Опубликовать</button>
                 </div>
 
                 <div class="generator-preview-container" id="generator-preview-container">
                     <h3 style="color:#fff; margin-bottom:15px;">Твоя клубная карточка готова!</h3>
                     <canvas id="clubCardCanvas" width="600" height="850"></canvas>
+                    <img id="generatedImgElement" class="generated-result-img" alt="Клубная карточка">
                     <br>
-                    <button class="tg-button" onclick="downloadClubCard()" style="background:#22c55e; margin-top:15px; font-weight:bold; max-width:300px;">💾 Скачать Карточку</button>
+                    <button class="tg-button" onclick="downloadClubCard()" style="background:#22c55e; margin-top:15px; font-weight:bold; max-width:300px; display:inline-block;">💾 Скачать Карточку</button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 40px 0;">
+
+                <h3 style="text-align: center; color: #00d2ff; font-size: 1.4rem; margin-bottom: 5px;">Семья APG в Лицах</h3>
+                <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Карточки участников нашего автосообщества</p>
+                <div class="cards-grid" id="club-cards-container">
+                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка карточек участников...</p>
                 </div>
             </section>
         </div>
@@ -236,8 +250,18 @@
             <section class="section-block gallery-section">
                 <h2>Галерея Auto Partners Group</h2>
                 <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:10px;">Фотографии автомобилей, сходок и ярких моментов нашей банды!</p>
+                
                 <div class="gallery-grid" id="gallery-images-container">
                     <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка галереи APG...</p>
+                </div>
+
+                <div class="gallery-sub-section">
+                    <h3 style="text-align: center; color: #f59e0b; font-size: 1.4rem; margin-bottom: 5px; text-shadow: 0 0 10px rgba(245,158,11,0.2);">🏆 Наши достижения</h3>
+                    <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:15px;">Кубки, грамоты, дипломы и официальные награды нашего клуба!</p>
+                    
+                    <div class="achievements-grid" id="achievements-container">
+                        <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка достижений...</p>
+                    </div>
                 </div>
             </section>
         </div>
@@ -245,9 +269,9 @@
         <div id="merch-tab" class="tab-content">
             <section class="section-block merch-section">
                 <h2>Фирменный Мерч APG</h2>
-                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:10px;">Стань частью стиля банды. Выбирай качественную атрибутику и одежду Auto Partners Group!</p>
+                <p style="color:#94a3b8; text-align:center; font-size:0.95rem; margin-bottom:10px;">Фотографии нашей атрибутики, наклеек и одежды сообщества!</p>
                 <div class="merch-grid" id="merch-items-container">
-                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка витрины мерча...</p>
+                    <p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Загрузка фото мерча...</p>
                 </div>
             </section>
         </div>
@@ -269,29 +293,35 @@
                 <h3>Панель управления APG (Live База)</h3>
                 
                 <div class="admin-subform">
-                    <h4>Добавить фото в галерею APG (Максимальное Сжатие)</h4>
+                    <h4>Добавить фото в галерею APG</h4>
                     <div class="file-input-wrapper">
-                        <label for="new-photo-file" class="file-input-label" id="file-label-text">📁 Выбрать файлы изображений (до 800px)</label>
+                        <label for="new-photo-file" class="file-input-label" id="file-label-text">📁 Выбрать файлы изображений</label>
                         <input type="file" id="new-photo-file" accept="image/jpeg, image/png, image/jpg" multiple style="display:none;" onchange="handleMultipleFilesSelect(this, 'gallery')">
                     </div>
                     <input type="text" id="new-photo-desc" placeholder="Описание для фото (необязательно)">
                     <button class="tg-button blue-btn" id="upload-photo-btn" onclick="uploadAllSelectedPhotos('gallery')">Добавить в галерею</button>
-                    
                     <button class="tg-button" onclick="clearEntireGallery()" style="background: #e11d48; margin-top: 15px; font-weight: bold;">🚨 Удалить ВСЮ галерею</button>
                 </div>
 
                 <div class="admin-subform">
-                    <h4>Добавить новый Мерч на витрину</h4>
-                    <input type="text" id="new-merch-title" placeholder="Название товара (например: Футболка APG)">
-                    <input type="text" id="new-merch-price" placeholder="Цена (например: 1500 рублей)">
-                    
+                    <h4>Добавить достижение (Грамоты, Награды)</h4>
                     <div class="file-input-wrapper">
-                        <label for="new-merch-file" class="file-input-label" id="merch-file-label-text">📁 Выбрать фото товара (авто-сжатие)</label>
+                        <label for="new-achievement-file" class="file-input-label" id="achievement-file-label-text">🏆 Выбрать фото грамоты/награды</label>
+                        <input type="file" id="new-achievement-file" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="handleMultipleFilesSelect(this, 'achievements')">
+                    </div>
+                    <input type="text" id="new-achievement-title" placeholder="Описание (например: 1 место по автозвуку 2026)">
+                    <button class="tg-button" id="upload-achievement-btn" onclick="uploadAllSelectedPhotos('achievements')" style="background:#f59e0b; font-weight: bold;">Опубликовать достижение</button>
+                    <button class="tg-button" onclick="clearEntireAchievements()" style="background: #e11d48; margin-top: 15px; font-weight: bold;">🚨 Удалить ВСЕ достижения</button>
+                </div>
+
+                <div class="admin-subform">
+                    <h4>Добавить фото мерча в галерею</h4>
+                    <div class="file-input-wrapper">
+                        <label for="new-merch-file" class="file-input-label" id="merch-file-label-text">📁 Выбрать фото мерча (авто-сжатие)</label>
                         <input type="file" id="new-merch-file" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="handleMultipleFilesSelect(this, 'merch')">
                     </div>
-                    <input type="text" id="new-merch-tg" placeholder="Ник в Telegram для заказа (например: LENAR_APG)">
-                    <button class="tg-button" id="upload-merch-btn" onclick="uploadAllSelectedPhotos('merch')" style="background:#22c55e;">Опубликовать товар</button>
-                    
+                    <input type="text" id="new-merch-title" placeholder="Описание к фото мерча (необязательно)">
+                    <button class="tg-button" id="upload-merch-btn" onclick="uploadAllSelectedPhotos('merch')" style="background:#22c55e;">Опубликовать в мерч</button>
                     <button class="tg-button" onclick="clearEntireMerch()" style="background: #e11d48; margin-top: 15px; font-weight: bold;">🚨 Удалить ВЕСЬ Мерч</button>
                 </div>
 
@@ -329,35 +359,44 @@
         let globalReviews = [];
         let globalPhotos = [];
         let globalMerch = [];
+        let globalCards = []; 
+        let globalAchievements = []; // Массив для достижений (грамот)
         
         let selectedReviewStars = 5;
         let editingServiceId = null; 
         let selectedFilesQueue = []; 
         let selectedMerchFilesQueue = [];
-        let selectedGenPhotoBase64 = null; // Для холста генератора
+        let selectedAchievementFilesQueue = [];
+        let selectedGenPhotoBase64 = null; 
         let isFirstLoadDone = false; 
 
         // Загрузка данных из Firebase
         async function loadFirebaseData() {
             try {
-                const [resServices, resReviews, resPhotos, resMerch] = await Promise.all([
+                const [resServices, resReviews, resPhotos, resMerch, resCards, resAchievements] = await Promise.all([
                     fetch(`${FIREBASE_URL}services.json`),
                     fetch(`${FIREBASE_URL}reviews.json`),
                     fetch(`${FIREBASE_URL}gallery.json`),
-                    fetch(`${FIREBASE_URL}merch.json`)
+                    fetch(`${FIREBASE_URL}merch.json`),
+                    fetch(`${FIREBASE_URL}cards.json`),
+                    fetch(`${FIREBASE_URL}achievements.json`)
                 ]);
 
-                const [dataServices, dataReviews, dataPhotos, dataMerch] = await Promise.all([
+                const [dataServices, dataReviews, dataPhotos, dataMerch, dataCards, dataAchievements] = await Promise.all([
                     resServices.json(),
                     resReviews.json(),
                     resPhotos.json(),
-                    resMerch.json()
+                    resMerch.json(),
+                    resCards.json(),
+                    resAchievements.json()
                 ]);
 
                 globalServices = dataServices ? Object.keys(dataServices).map(key => ({...dataServices[key], firebaseId: key})) : [];
                 globalReviews = dataReviews ? Object.keys(dataReviews).map(key => ({...dataReviews[key], firebaseId: key})).reverse() : [];
                 globalPhotos = dataPhotos ? Object.keys(dataPhotos).map(key => ({...dataPhotos[key], firebaseId: key})).reverse() : [];
                 globalMerch = dataMerch ? Object.keys(dataMerch).map(key => ({...dataMerch[key], firebaseId: key})).reverse() : [];
+                globalCards = dataCards ? Object.keys(dataCards).map(key => ({...dataCards[key], firebaseId: key})).reverse() : [];
+                globalAchievements = dataAchievements ? Object.keys(dataAchievements).map(key => ({...dataAchievements[key], firebaseId: key})).reverse() : [];
 
                 isFirstLoadDone = true; 
                 renderData();
@@ -422,7 +461,7 @@
 
             document.getElementById('services-tab-btn').innerText = `Услуги (${globalServices.length})`;
             document.getElementById('reviews-tab-btn').innerText = `Отзывы (${globalReviews.length})`;
-            document.getElementById('gallery-tab-btn').innerText = `Галерея (${globalPhotos.length})`;
+            document.getElementById('gallery-tab-btn').innerText = `Галерея (${globalPhotos.length + globalAchievements.length})`;
             document.getElementById('merch-tab-btn').innerText = `Мерч APG (${globalMerch.length})`;
 
             // Отрисовка услуг
@@ -475,19 +514,37 @@
             });
             document.getElementById('gallery-images-container').innerHTML = galleryHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">В галерее пока нет фотографий</p>';
 
-            // Отрисовка витрины мерча
-            let merchHtml = '';
-            globalMerch.forEach((m) => {
-                let tgLink = m.tg ? `https://t.me/${m.tg.replace('@','')}` : 'https://t.me/LENAR_APG';
-                merchHtml += `
-                    <div class="merch-item">
-                        <img src="${m.url}" alt="${m.title}" onerror="this.src='https://placehold.co/400x300/1e293b/00d2ff?text=Ошибка'">
-                        <div class="merch-details">${m.price || 'Цена договорная'}</div>
-                        <a href="${tgLink}" target="_blank" class="merch-order-btn">Купить</a>
-                        <div class="photo-caption">${m.title}</div>
+            // Отрисовка достижений
+            let achievementsHtml = '';
+            globalAchievements.forEach((a) => {
+                achievementsHtml += `
+                    <div class="achievement-item">
+                        <img src="${a.url}" alt="${a.title || 'Достижение APG'}" onerror="this.src='https://placehold.co/400x560/1e293b/00d2ff?text=Ошибка'">
+                        ${a.title ? `<div class="photo-caption">${a.title}</div>` : ''}
                     </div>`;
             });
-            document.getElementById('merch-items-container').innerHTML = merchHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Товары на витрине пока отсутствуют</p>';
+            document.getElementById('achievements-container').innerHTML = achievementsHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Наград и грамот пока нет. Скоро загрузим!</p>';
+
+            // Отрисовка галереи мерча
+            let merchHtml = '';
+            globalMerch.forEach((m) => {
+                merchHtml += `
+                    <div class="merch-item">
+                        <img src="${m.url}" alt="${m.title || 'Мерч APG'}" onerror="this.src='https://placehold.co/400x300/1e293b/00d2ff?text=Ошибка'">
+                        ${m.title ? `<div class="photo-caption">${m.title}</div>` : ''}
+                    </div>`;
+            });
+            document.getElementById('merch-items-container').innerHTML = merchHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Фото мерча пока отсутствуют</p>';
+
+            // Отрисовка галереи участников (клубные карточки)
+            let cardsHtml = '';
+            globalCards.forEach((c) => {
+                cardsHtml += `
+                    <div class="card-gallery-item">
+                        <img src="${c.url}" alt="Карточка участника" onerror="this.src='https://placehold.co/400x560/1e293b/00d2ff?text=Ошибка'">
+                    </div>`;
+            });
+            document.getElementById('club-cards-container').innerHTML = cardsHtml || '<p style="text-align:center; color:#64748b; grid-column: span 2; padding: 40px;">Клубных карточек еще никто не сгенерировал. Создай первую!</p>';
         }
 
         async function sendUserReview() {
@@ -503,16 +560,6 @@
 
             await fetch(`${FIREBASE_URL}reviews.json`, { method: 'POST', body: JSON.stringify(reviewData) });
 
-            if(TG_BOT_TOKEN && TG_CHAT_ID) {
-                let starsLine = '⭐'.repeat(selectedReviewStars);
-                let msg = `📣 *Новый отзыв на сайте APG!*\n\n👤 *От кого:* ${author}\n${starsLine}\n💬 *Текст:* ${text}`;
-                fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: 'Markdown' })
-                }).catch(e => console.log('Ошибка TG:', e));
-            }
-
             document.getElementById('review-author-input').value = '';
             document.getElementById('review-text-input').value = '';
             setReviewStars(5);
@@ -520,7 +567,7 @@
             alert('Спасибо! Ваш отзыв добавлен на стену.');
         }
 
-        // Выбор файлов для пакетной загрузки
+        // Выбор файлов
         function handleMultipleFilesSelect(input, target) {
             const files = input.files;
             if (!files || files.length === 0) return;
@@ -531,10 +578,13 @@
             } else if (target === 'merch') {
                 selectedMerchFilesQueue = Array.from(files);
                 document.getElementById('merch-file-label-text').innerText = `✅ Выбрано фото мерча: ${files.length}.`;
+            } else if (target === 'achievements') {
+                selectedAchievementFilesQueue = Array.from(files);
+                document.getElementById('achievement-file-label-text').innerText = `✅ Выбрана грамота/награда.`;
             }
         }
 
-        // ФУНКЦИЯ УЛЬТРА-СЖАТИЯ ИЗОБРАЖЕНИЙ (макс. ширина 800px, качество 0.5)
+        // Сжатие картинок
         function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -565,7 +615,7 @@
             });
         }
 
-        // Загрузка фото в конструктор визитки
+        // Загрузка фото автомобиля
         function handleGenPhotoSelect(input) {
             const file = input.files[0];
             if (!file) return;
@@ -578,7 +628,7 @@
             };
         }
 
-        // ГЕНЕРАЦИЯ КЛУБНОЙ КАРТОЧКИ СЕМЬИ APG
+        // Генерация карточки APG FAMILY и автозагрузка в базу
         function generateClubCard() {
             const nickname = document.getElementById('gen-nickname').value.trim();
             const car = document.getElementById('gen-car').value.trim();
@@ -594,11 +644,10 @@
             const canvas = document.getElementById('clubCardCanvas');
             const ctx = canvas.getContext('2d');
 
-            // 1. Отрисовка темного кибер-фона
             ctx.fillStyle = '#0a0f1d';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Рисуем сетку на фоне (в стиле NFS)
+            // Сетка
             ctx.strokeStyle = 'rgba(0, 210, 255, 0.05)';
             ctx.lineWidth = 1;
             for(let i = 0; i < canvas.width; i += 40) {
@@ -608,22 +657,18 @@
                 ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
             }
 
-            // 3. Загрузка и вставка изображения автомобиля
             const carImg = new Image();
             carImg.src = selectedGenPhotoBase64;
-            carImg.onload = () => {
-                // Прямоугольная область под фото
+            carImg.onload = async () => {
                 const photoX = 40;
                 const photoY = 160;
                 const photoWidth = 520;
                 const photoHeight = 390;
 
-                // Рисуем рамку фото
                 ctx.strokeStyle = '#00d2ff';
                 ctx.lineWidth = 3;
                 ctx.strokeRect(photoX, photoY, photoWidth, photoHeight);
 
-                // Вписываем фото машины (сохраняя пропорции / cover)
                 const imgRatio = carImg.width / carImg.height;
                 const areaRatio = photoWidth / photoHeight;
                 let sx, sy, sWidth, sHeight;
@@ -641,17 +686,16 @@
                 }
                 ctx.drawImage(carImg, sx, sy, sWidth, sHeight, photoX, photoY, photoWidth, photoHeight);
 
-                // 4. Отрисовка декоративных неоновых углов и рамок
+                // Декор и неон
                 ctx.strokeStyle = '#e11d48';
                 ctx.lineWidth = 5;
                 ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-                // Внутренняя голубая неоновая тонкая рамочка
                 ctx.strokeStyle = 'rgba(0, 210, 255, 0.5)';
                 ctx.lineWidth = 1.5;
                 ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
 
-                // 5. Отрисовка шапки карточки (Герб APG и заголовок)
+                // Текст шапки
                 ctx.fillStyle = '#fff';
                 ctx.font = '900 28px sans-serif';
                 ctx.textAlign = 'left';
@@ -661,16 +705,14 @@
                 ctx.font = 'bold 16px sans-serif';
                 ctx.fillText("OFFICIAL CLUB MEMBER", 50, 110);
 
-                // Отрисовка логотипа клуба справа в шапке
                 const logoImg = document.getElementById('club-logo-source');
                 if (logoImg) {
                     ctx.drawImage(logoImg, canvas.width - 120, 45, 75, 75);
                 }
 
-                // 6. Подписи и характеристики в нижней части
                 const textStartY = 590;
 
-                // Блок НИК
+                // Драйвер
                 ctx.fillStyle = '#64748b';
                 ctx.font = 'bold 14px sans-serif';
                 ctx.fillText("DRIVER / НИК", 50, textStartY);
@@ -678,7 +720,7 @@
                 ctx.font = '900 26px sans-serif';
                 ctx.fillText(nickname.toUpperCase(), 50, textStartY + 35);
 
-                // Блок АВТО
+                // Машина
                 ctx.fillStyle = '#64748b';
                 ctx.font = 'bold 14px sans-serif';
                 ctx.fillText("RIDE / АВТОМОБИЛЬ", 50, textStartY + 85);
@@ -686,7 +728,7 @@
                 ctx.font = '900 24px sans-serif';
                 ctx.fillText(car.toUpperCase(), 50, textStartY + 115);
 
-                // Блок КЛУБНЫЙ КЛАСС / РОЛЬ (в рамке)
+                // Плашка роли
                 const roleX = 50;
                 const roleY = 745;
                 ctx.fillStyle = '#e11d48';
@@ -697,26 +739,49 @@
                 ctx.textAlign = 'center';
                 ctx.fillText(role, canvas.width / 2, roleY + 33);
 
-                // Показываем контейнер с результатом
+                const finalBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById('generatedImgElement').src = finalBase64;
+
                 document.getElementById('generator-preview-container').style.display = 'block';
                 document.getElementById('generator-preview-container').scrollIntoView({ behavior: 'smooth' });
+
+                try {
+                    await fetch(`${FIREBASE_URL}cards.json`, {
+                        method: 'POST',
+                        body: JSON.stringify({ url: finalBase64, author: nickname })
+                    });
+                    loadFirebaseData();
+                } catch(err) {
+                    console.error("Ошибка автосохранения карточки:", err);
+                }
             };
         }
 
-        // Скачивание готовой сгенерированной карточки
+        // Скачивание визитки
         function downloadClubCard() {
-            const canvas = document.getElementById('clubCardCanvas');
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            const img = document.getElementById('generatedImgElement');
             const link = document.createElement('a');
             link.download = 'APG_Family_Card.jpg';
-            link.href = dataUrl;
+            link.href = img.src;
             link.click();
         }
 
-        // Пакетная загрузка ультра-сжатых фотографий
+        // Пакетная загрузка
         async function uploadAllSelectedPhotos(target) {
-            let queue = target === 'gallery' ? selectedFilesQueue : selectedMerchFilesQueue;
-            let btnId = target === 'gallery' ? 'upload-photo-btn' : 'upload-merch-btn';
+            let queue = [];
+            let btnId = '';
+            
+            if (target === 'gallery') {
+                queue = selectedFilesQueue;
+                btnId = 'upload-photo-btn';
+            } else if (target === 'merch') {
+                queue = selectedMerchFilesQueue;
+                btnId = 'upload-merch-btn';
+            } else if (target === 'achievements') {
+                queue = selectedAchievementFilesQueue;
+                btnId = 'upload-achievement-btn';
+            }
+
             let btn = document.getElementById(btnId);
 
             if (queue.length === 0) {
@@ -729,90 +794,90 @@
                 const desc = document.getElementById('new-photo-desc').value.trim();
                 for (let i = 0; i < queue.length; i++) {
                     const file = queue[i];
-                    btn.innerText = `⚙️ Сжатие и загрузка: ${i + 1} из ${queue.length}...`;
+                    btn.innerText = `⚙️ Загрузка: ${i + 1} из ${queue.length}...`;
                     try {
                         const compressedBase64 = await compressImage(file);
                         await fetch(`${FIREBASE_URL}gallery.json`, {
                             method: 'POST',
                             body: JSON.stringify({ url: compressedBase64, desc: desc })
                         });
-                    } catch (e) {
-                        console.error("Ошибка при заливке в галерею: ", e);
-                    }
+                    } catch (e) { console.error(e); }
                 }
                 selectedFilesQueue = [];
                 document.getElementById('new-photo-file').value = "";
-                document.getElementById('file-label-text').innerText = "📁 Выбрать файлы изображений (до 800px)";
+                document.getElementById('file-label-text').innerText = "📁 Выбрать файлы изображений";
                 document.getElementById('new-photo-desc').value = '';
                 btn.innerText = "Добавить в галерею";
 
             } else if (target === 'merch') {
                 const title = document.getElementById('new-merch-title').value.trim();
-                const price = document.getElementById('new-merch-price').value.trim();
-                const tg = document.getElementById('new-merch-tg').value.trim();
-
-                if(!title || !price) {
-                    btn.disabled = false;
-                    return alert('Заполните название и цену товара мерча!');
-                }
-
-                btn.innerText = `⚙️ Сжатие товара...`;
+                btn.innerText = `⚙️ Сжатие фото мерча...`;
                 try {
                     const compressedBase64 = await compressImage(queue[0]);
                     await fetch(`${FIREBASE_URL}merch.json`, {
                         method: 'POST',
-                        body: JSON.stringify({ 
-                            url: compressedBase64, 
-                            title: title, 
-                            price: price, 
-                            tg: tg || 'LENAR_APG' 
-                        })
+                        body: JSON.stringify({ url: compressedBase64, title: title || '' })
                     });
-                } catch (e) {
-                    console.error("Ошибка при заливке мерча: ", e);
-                }
+                } catch (e) { console.error(e); }
 
                 selectedMerchFilesQueue = [];
                 document.getElementById('new-merch-file').value = "";
                 document.getElementById('new-merch-title').value = "";
-                document.getElementById('new-merch-price').value = "";
-                document.getElementById('new-merch-tg').value = "";
-                document.getElementById('merch-file-label-text').innerText = "📁 Выбрать фото товара (авто-сжатие)";
-                btn.innerText = "Опубликовать товар";
+                document.getElementById('merch-file-label-text').innerText = "📁 Выбрать фото мерча (авто-сжатие)";
+                btn.innerText = "Опубликовать в мерч";
+
+            } else if (target === 'achievements') {
+                const title = document.getElementById('new-achievement-title').value.trim();
+                btn.innerText = `⚙️ Загрузка достижения...`;
+                try {
+                    const compressedBase64 = await compressImage(queue[0]);
+                    await fetch(`${FIREBASE_URL}achievements.json`, {
+                        method: 'POST',
+                        body: JSON.stringify({ url: compressedBase64, title: title || '' })
+                    });
+                } catch (e) { console.error(e); }
+
+                selectedAchievementFilesQueue = [];
+                document.getElementById('new-achievement-file').value = "";
+                document.getElementById('new-achievement-title').value = "";
+                document.getElementById('achievement-file-label-text').innerText = "🏆 Выбрать фото грамоты/награды";
+                btn.innerText = "Опубликовать достижение";
             }
 
             btn.disabled = false;
             loadFirebaseData();
-            alert('Успешно загружено и экстремально сжато!');
+            alert('Успешно загружено!');
         }
 
-        // Полное удаление галереи
+        // Очистки баз
         async function clearEntireGallery() {
             if (!confirm('⚠️ ВНИМАНИЕ! Полностью удалить ВСЕ фото из галереи?')) return;
-            if (!confirm('🔥 ПОДТВЕРДИТЕ ЕЩЕ РАЗ: База галереи очистится полностью!')) return;
-
             try {
                 await fetch(`${FIREBASE_URL}gallery.json`, { method: 'DELETE' });
-                alert('Галерея успешно очищена!');
+                alert('Галерея очищена!');
                 loadFirebaseData();
-            } catch (e) {
-                alert('Ошибка при очистке!');
-            }
+            } catch (e) { alert('Ошибка!'); }
         }
 
-        // Полное удаление мерча
         async function clearEntireMerch() {
             if (!confirm('⚠️ Вы действительно хотите очистить всю витрину мерча?')) return;
             try {
                 await fetch(`${FIREBASE_URL}merch.json`, { method: 'DELETE' });
                 alert('Витрина мерча очищена!');
                 loadFirebaseData();
-            } catch (e) {
-                alert('Ошибка при очистке!');
-            }
+            } catch (e) { alert('Ошибка!'); }
         }
 
-        // Добавление или Изменение услуги
+        async function clearEntireAchievements() {
+            if (!confirm('⚠️ Удалить ВСЕ достижения и грамоты?')) return;
+            try {
+                await fetch(`${FIREBASE_URL}achievements.json`, { method: 'DELETE' });
+                alert('Достижения очищены!');
+                loadFirebaseData();
+            } catch (e) { alert('Ошибка!'); }
+        }
+
+        // Добавление / Изменение услуг
         async function addNewService() {
             const title = document.getElementById('new-service-title').value.trim();
             const price = document.getElementById('new-service-price').value.trim();
@@ -880,8 +945,14 @@
         }
 
         async function removeMerch(firebaseId) {
-            if(!confirm('Удалить этот товар с витрины мерча?')) return;
+            if(!confirm('Удалить эту фотографию из мерча?')) return;
             await fetch(`${FIREBASE_URL}merch/${firebaseId}.json`, { method: 'DELETE' });
+            loadFirebaseData();
+        }
+
+        async function removeAchievement(firebaseId) {
+            if(!confirm('Удалить эту грамоту/диплом?')) return;
+            await fetch(`${FIREBASE_URL}achievements/${firebaseId}.json`, { method: 'DELETE' });
             loadFirebaseData();
         }
 
@@ -898,6 +969,12 @@
             loadFirebaseData();
         }
 
+        async function removeCard(firebaseId) {
+            if(!confirm('Удалить эту клубную карточку из галереи участников?')) return;
+            await fetch(`${FIREBASE_URL}cards/${firebaseId}.json`, { method: 'DELETE' });
+            loadFirebaseData();
+        }
+
         // Отрисовка списков модерации в админке
         function renderAdminControls() {
             let html = '<p style="font-size:0.9rem; color:#00d2ff; margin-bottom:5px;">Галерея APG:</p>';
@@ -908,11 +985,27 @@
                 </div>`;
             });
 
-            html += '<p style="font-size:0.9rem; color:#d946ef; margin-top:15px; margin-bottom:5px;">Мерч на витрине:</p>';
+            html += '<p style="font-size:0.9rem; color:#f59e0b; margin-top:15px; margin-bottom:5px;">Наши достижения (грамоты):</p>';
+            globalAchievements.forEach((a) => {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
+                    <span>🏆 ${a.title ? a.title.substring(0, 20) : 'Грамота без описания'}</span>
+                    <button onclick="removeAchievement('${a.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
+                </div>`;
+            });
+
+            html += '<p style="font-size:0.9rem; color:#d946ef; margin-top:15px; margin-bottom:5px;">Фотоподкладка мерча:</p>';
             globalMerch.forEach((m) => {
                 html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
-                    <span>👕 ${m.title.substring(0, 20)} (${m.price})</span>
+                    <span>👕 ${m.title ? m.title.substring(0, 20) : 'Мерч фото'}</span>
                     <button onclick="removeMerch('${m.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
+                </div>`;
+            });
+
+            html += '<p style="font-size:0.9rem; color:#38bdf8; margin-top:15px; margin-bottom:5px;">Клубные карточки участников:</p>';
+            globalCards.forEach((c) => {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:5px 10px; border-radius:6px; margin-bottom:5px; font-size:0.85rem;">
+                    <span>🎴 Карточка: ${c.author || 'Без автора'}</span>
+                    <button onclick="removeCard('${c.firebaseId}')" style="background:#ff0055; border:none; color:#fff; padding:2px 6px; border-radius:4px; cursor:pointer;">Удалить</button>
                 </div>`;
             });
 
