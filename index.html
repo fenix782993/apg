@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* ======================================================= */
-        /* ВСТАВЛЕНО: Стили для экрана загрузки (Прелоадера)       */
+        /* ОБНОВЛЕНО: Стили для экрана загрузки (Прелоадера) с ЛОГО */
         /* ======================================================= */
         #preloader {
             position: fixed;
@@ -23,15 +23,30 @@
             align-items: center;
             transition: opacity 0.5s ease, visibility 0.5s ease;
         }
+        .loader-wrapper {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         .loader-spinner {
-            width: 70px;
-            height: 70px;
+            position: absolute;
+            width: 100%;
+            height: 100%;
             border: 4px solid rgba(0, 210, 255, 0.1);
             border-left-color: #00d2ff;
             border-right-color: #e11d48;
             border-radius: 50%;
             animation: spin-loader 1s linear infinite;
             filter: drop-shadow(0 0 15px rgba(0, 210, 255, 0.5));
+        }
+        .loader-logo {
+            width: 55px;
+            height: 55px;
+            object-fit: contain;
+            border-radius: 50%;
         }
         .loader-text {
             color: #ffffff;
@@ -105,9 +120,13 @@
 </head>
 <body>
     <div id="preloader">
-        <div class="loader-spinner"></div>
+        <div class="loader-wrapper">
+            <div class="loader-spinner"></div>
+            <img src="лого.PNG" alt="APG Логотип" class="loader-logo">
+        </div>
         <div class="loader-text">Загрузка APG...</div>
     </div>
+
     <div class="flying-logo-container">
         <img src="герб1.jpg" alt="APG Герб" class="flying-logo-img" id="club-logo-source">
     </div>
@@ -129,7 +148,6 @@
         <button class="tab-btn" onclick="switchTab('gallery-tab', this)" id="gallery-tab-btn">Галерея (...)</button>
         <button class="tab-btn" onclick="switchTab('merch-tab', this)" id="merch-tab-btn">Мерч APG (...)</button>
     </div>
-
     <main class="container">
         
         <div id="chats-tab" class="tab-content active">
