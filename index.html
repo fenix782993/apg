@@ -6,6 +6,53 @@
     <title>Auto Partners Group | APG</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* ======================================================= */
+        /* ВСТАВЛЕНО: Стили для экрана загрузки (Прелоадера)       */
+        /* ======================================================= */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0a0f1d;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .loader-spinner {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(0, 210, 255, 0.1);
+            border-left-color: #00d2ff;
+            border-right-color: #e11d48;
+            border-radius: 50%;
+            animation: spin-loader 1s linear infinite;
+            filter: drop-shadow(0 0 15px rgba(0, 210, 255, 0.5));
+        }
+        .loader-text {
+            color: #ffffff;
+            margin-top: 20px;
+            font-family: sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: pulse-text 1.5s ease-in-out infinite;
+        }
+        @keyframes spin-loader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse-text {
+            0%, 100% { opacity: 0.6; text-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
+            50% { opacity: 1; text-shadow: 0 0 15px rgba(0, 210, 255, 0.6); }
+        }
+        /* ======================================================= */
+
         /* Стили для отзывов и звезд */
         .rating-select { display: flex; gap: 8px; margin-bottom: 12px; font-size: 1.5rem; }
         .rating-select span { cursor: pointer; color: #475569; transition: color 0.2s; }
@@ -57,7 +104,10 @@
     </style>
 </head>
 <body>
-
+    <div id="preloader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Загрузка APG...</div>
+    </div>
     <div class="flying-logo-container">
         <img src="герб1.jpg" alt="APG Герб" class="flying-logo-img" id="club-logo-source">
     </div>
