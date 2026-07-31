@@ -54,6 +54,115 @@
 
         /* Подразделы в Галерее */
         .gallery-sub-section { margin-top: 35px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
+
+        /* СТИЛИ ДЛЯ ПОДКТАДОК FENIX DIGITAL (VPN & STARS) */
+        .fenix-section {
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px dashed rgba(0, 210, 255, 0.25);
+        }
+        .fenix-section-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .fenix-section-title span {
+            color: #00d2ff;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        }
+        .fenix-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .fenix-card {
+            border-radius: 16px;
+            padding: 22px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        .fenix-card.vpn-style {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(14, 165, 233, 0.15));
+            border: 1.5px solid rgba(0, 210, 255, 0.5);
+        }
+        .fenix-card.vpn-style:hover {
+            transform: translateY(-6px);
+            border-color: #00d2ff;
+            box-shadow: 0 12px 30px rgba(0, 210, 255, 0.35);
+        }
+        .fenix-card.stars-style {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(245, 158, 11, 0.15));
+            border: 1.5px solid rgba(245, 158, 11, 0.5);
+        }
+        .fenix-card.stars-style:hover {
+            transform: translateY(-6px);
+            border-color: #f59e0b;
+            box-shadow: 0 12px 30px rgba(245, 158, 11, 0.35);
+        }
+        .fenix-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            width: fit-content;
+        }
+        .vpn-style .fenix-badge {
+            background: rgba(0, 210, 255, 0.15);
+            color: #00d2ff;
+            border: 1px solid rgba(0, 210, 255, 0.4);
+        }
+        .stars-style .fenix-badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .fenix-card h3 {
+            font-size: 1.3rem;
+            color: #fff;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fenix-card p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+        .fenix-action-btn {
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .vpn-style .fenix-action-btn {
+            background: linear-gradient(90deg, #00d2ff, #0072ff);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+        }
+        .stars-style .fenix-action-btn {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .fenix-card:hover .fenix-action-btn {
+            filter: brightness(1.15);
+        }
     </style>
 </head>
 <body>
@@ -127,6 +236,32 @@
                         <span class="btn">Подобрать авто</span>
                     </a>
                 </div>
+
+                <div class="fenix-section">
+                    <h3 class="fenix-section-title">⚡ Цифровые сервисы <span>Fenix</span></h3>
+                    <div class="fenix-cards-grid">
+                        
+                        <a href="https://t.me/fenixVPNrobot" target="_blank" class="fenix-card vpn-style">
+                            <div>
+                                <span class="fenix-badge">🛡️ Высокая скорость</span>
+                                <h3>🛡️ Fenix VPN Bot</h3>
+                                <p>Быстрый, стабильный и безопасный VPN для всех ваших устройств. Доступ без сбоев и ограничений.</p>
+                            </div>
+                            <div class="fenix-action-btn">🚀 Подключить VPN (@fenixVPNrobot)</div>
+                        </a>
+
+                        <a href="https://t.me/Fenix_Stars_bot" target="_blank" class="fenix-card stars-style">
+                            <div>
+                                <span class="fenix-badge">⭐ Быстро и выгодно</span>
+                                <h3>⭐ Fenix Stars Bot</h3>
+                                <p>Покупка Telegram Stars по лучшему курсу. Мгновенное пополнение для реакций, платных сервисов и подарков.</p>
+                            </div>
+                            <div class="fenix-action-btn">✨ Купить Stars (@Fenix_Stars_bot)</div>
+                        </a>
+
+                    </div>
+                </div>
+
             </section>
         </div>
 
