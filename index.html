@@ -587,14 +587,14 @@
 <button class="user-profile-btn" onclick="openAuthModal()" title="Личный кабинет">👤</button>
 
 <div class="modal-overlay" id="userAuthModal">
-    <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
         <span class="close-modal-btn" onclick="closeAuthModal()">&times;</span>
         
         <div id="auth-form-section">
             <h3 style="margin-bottom: 15px; color: #fff;">Вход / Регистрация</h3>
             
             <div class="auth-form-group">
-                <label>Ваш Никнейм / Имя:</label>
+                <label>Ваш Никнейм:</label>
                 <input type="text" id="user-nickname" placeholder="Например: @lenar_apg">
             </div>
 
@@ -604,32 +604,206 @@
             </div>
 
             <div class="auth-form-group">
-                <label>Придумайте Пароль:</label>
-                <input type="password" id="user-password" placeholder="••••••••">
+                <label>Ваше Авто (Марка / Модель):</label>
+                <input type="text" id="user-car" placeholder="Например: BMW M3 / Porsche 911">
             </div>
 
-            <button class="tg-button blue-btn" onclick="saveUserRegistration()" style="margin-top: 10px; width: 100%;">Сохранить / Войти</button>
+            <div class="auth-form-group">
+                <label>Пароль:</label>
+                <div style="position: relative;">
+                    <input type="password" id="user-password" placeholder="••••••••" style="padding-right: 40px;">
+                    <span onclick="togglePasswordVisibility('user-password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; user-select: none;">👁️</span>
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label>Аватарка (из галереи):</label>
+                <input type="file" id="user-avatar-input" accept="image/*" style="font-size: 0.85rem; color: #cbd5e1;">
+            </div>
+
+            <button class="tg-button blue-btn" onclick="saveUserRegistration()" style="margin-top: 15px; width: 100%;">Сохранить / Войти</button>
         </div>
 
         <div id="profile-info-section" style="display: none;">
             <h3 style="margin-bottom: 15px; color: #fff;">Профиль Участника</h3>
             
             <div class="profile-card-info">
-                <div class="profile-avatar">🏎️</div>
+                <div style="position: relative; width: 80px; height: 80px; margin: 0 auto 10px auto;">
+                    <img id="profile-avatar-img" src="" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #00d2ff; display: none;">
+                    <div id="profile-avatar-fallback" class="profile-avatar" style="margin: 0;">🏎️</div>
+                </div>
+
+                <div id="profile-status-badge" style="display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-bottom: 12px;"></div>
+
                 <div class="profile-item">Никнейм: <span id="view-user-nickname">-</span></div>
                 <div class="profile-item">Email: <span id="view-user-email">-</span></div>
-                <div class="profile-item" style="font-size:0.8rem; color:#64748b;">Пароль сохранён: ••••••••</div>
+                <div class="profile-item">Авто: <span id="view-user-car">-</span></div>
+                <div class="profile-item" style="font-size:0.8rem; color:#64748b; margin-top: 5px;">Пароль сохранён: ••••••••</div>
             </div>
 
             <button class="tg-button" onclick="logoutUser()" style="background: #e11d48; width: 100%;">Выйти из аккаунта</button>
         </div>
     </div>
-</div>
-   <footer>
+</div>   <footer>
         <p>&copy; 2026 Auto Partners Group. Все права защищены.</p>
     </footer>
 
     <script>
+// Хранение данных пользователя
+let currentUserData = JSON.parse(localStorage.getItem('apg_user_account')) || null;
+
+// Функция переключения видимости пароля (👁️)
+function togglePasswordVisibility(inputId, eyeIcon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.innerText = '🙈';
+    } else {
+        input.type = 'password';
+        eyeIcon.innerText = '👁️';
+    }
+}
+
+// Расчет статуса участника
+function getMemberStatus(user) {
+    if (user.car && user.avatar) {
+        return { text: '🔥 VIP Club Member', bg: 'linear-gradient(135deg, #ff416c, #ff4b2b)', color: '#fff' };
+    } else if (user.car || user.avatar) {
+        return { text: '⚡ Driver APG', bg: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' };
+    } else {
+        return { text: '🟢 Новичок APG', bg: 'rgba(34, 197, 94, 0.2)', color: '#4ade80' };
+    }
+}
+
+// Обновление Интерфейса Профиля
+function updateProfileUI() {
+    const profileBtn = document.querySelector('.user-profile-btn');
+    const authSec = document.getElementById('auth-form-section');
+    const profSec = document.getElementById('profile-info-section');
+
+    if (currentUserData && currentUserData.nickname) {
+        // Иконка кнопки сверху
+        if (profileBtn) {
+            if (currentUserData.avatar) {
+                profileBtn.innerHTML = `<img src="${currentUserData.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                profileBtn.innerText = '😎';
+            }
+        }
+        
+        if (authSec) authSec.style.display = 'none';
+        if (profSec) profSec.style.display = 'block';
+        
+        // Заполнение полей профиля
+        document.getElementById('view-user-nickname').innerText = currentUserData.nickname;
+        document.getElementById('view-user-email').innerText = currentUserData.email;
+        document.getElementById('view-user-car').innerText = currentUserData.car || 'Не указано';
+
+        // Отображение статуса
+        const status = getMemberStatus(currentUserData);
+        const statusBadge = document.getElementById('profile-status-badge');
+        statusBadge.innerText = status.text;
+        statusBadge.style.background = status.bg;
+        statusBadge.style.color = status.color;
+
+        // Отображение аватарки в модальном окне
+        const imgEl = document.getElementById('profile-avatar-img');
+        const fallbackEl = document.getElementById('profile-avatar-fallback');
+        if (currentUserData.avatar) {
+            imgEl.src = currentUserData.avatar;
+            imgEl.style.display = 'block';
+            fallbackEl.style.display = 'none';
+        } else {
+            imgEl.style.display = 'none';
+            fallbackEl.style.display = 'flex';
+        }
+
+        // 🚗 АВТОПОДСТАНОВКА В ФОРМЫ НА САЙТЕ
+        // 1. В отзывы
+        if (document.getElementById('review-author-input')) {
+            document.getElementById('review-author-input').value = currentUserData.nickname;
+        }
+        // 2. В генератор клубных карточек
+        if (document.getElementById('gen-nickname')) {
+            document.getElementById('gen-nickname').value = currentUserData.nickname;
+        }
+        if (document.getElementById('gen-car') && currentUserData.car) {
+            document.getElementById('gen-car').value = currentUserData.car;
+        }
+        // 3. В форму бронирования авто
+        if (document.getElementById('bookName')) {
+            document.getElementById('bookName').value = currentUserData.nickname;
+        }
+        if (document.getElementById('bookCar') && currentUserData.car) {
+            document.getElementById('bookCar').value = currentUserData.car;
+        }
+
+    } else {
+        if (profileBtn) profileBtn.innerText = '👤';
+        if (authSec) authSec.style.display = 'block';
+        if (profSec) profSec.style.display = 'none';
+    }
+}
+
+function openAuthModal() {
+    document.getElementById('userAuthModal').style.display = 'flex';
+    updateProfileUI();
+}
+
+function closeAuthModal() {
+    document.getElementById('userAuthModal').style.display = 'none';
+}
+
+// Сохранение регистрации с загрузкой картинки
+function saveUserRegistration() {
+    const nick = document.getElementById('user-nickname').value.trim();
+    const email = document.getElementById('user-email').value.trim();
+    const car = document.getElementById('user-car').value.trim();
+    const pass = document.getElementById('user-password').value.trim();
+    const avatarInput = document.getElementById('user-avatar-input');
+
+    if (!nick || !email || !pass) {
+        alert('Пожалуйста, заполните основные поля (Ник, Почта и Пароль)!');
+        return;
+    }
+
+    const processAndSave = (avatarBase64) => {
+        currentUserData = { 
+            nickname: nick, 
+            email: email, 
+            car: car, 
+            password: pass, 
+            avatar: avatarBase64 || (currentUserData ? currentUserData.avatar : '') 
+        };
+        localStorage.setItem('apg_user_account', JSON.stringify(currentUserData));
+        alert('Данные профиля успешно сохранены!');
+        updateProfileUI();
+    };
+
+    // Чтение аватарки из галереи
+    if (avatarInput.files && avatarInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            processAndSave(e.target.result);
+        };
+        reader.readAsDataURL(avatarInput.files[0]);
+    } else {
+        processAndSave(null);
+    }
+}
+
+function logoutUser() {
+    if (confirm('Вы уверены, что хотите выйти из профиля?')) {
+        localStorage.removeItem('apg_user_account');
+        currentUserData = null;
+        updateProfileUI();
+    }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    updateProfileUI();
+});
         // Переменная для хранения текущего пользователя
         let currentUserData = JSON.parse(localStorage.getItem('apg_user_account')) || null;
 
