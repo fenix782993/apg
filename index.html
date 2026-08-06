@@ -164,6 +164,7 @@
             filter: brightness(1.15);
         }
     </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
@@ -173,11 +174,26 @@
 
     <header class="hero-banner">
         <div class="banner-overlay">
+
+            <div class="live-status-badge">
+                <span class="pulse-dot"></span>
+                🟢 APG КЛУБ • СТО ФАЭТОН РАБОТАЕТ | Прием заявок 24/7
+            </div>
+
             <h1>Auto Partners Group</h1>
             <p class="subtitle">Добро пожаловать в семью APG</p>
         </div>
         <button class="admin-trigger-btn" onclick="openAdminModal()">⚡</button>
     </header>
+
+    <!-- Бегущая неоновая лента -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <span>🔥 AUTO PARTNERS GROUP • СТО ФАЭТОН • АВТОЗВУК • ДЕТЕЙЛИНГ • ЧИП-ТЮНИНГ • ПРИВОЗ АВТО ИЗ КОРЕИ И КИТАЯ • 📍 МИНСК, УЛ. ФАЭТОН 24</span>
+            <span>🔥 AUTO PARTNERS GROUP • СТО ФАЭТОН • АВТОЗВУК • ДЕТЕЙЛИНГ • ЧИП-ТЮНИНГ • ПРИВОЗ АВТО ИЗ КОРЕИ И КИТАЯ • 📍 МИНСК, УЛ. ФАЭТОН 24</span>
+        </div>
+    </div>
+
 
     <div class="navigation-tabs">
         <button class="tab-btn active" onclick="switchTab('chats-tab', this)">Ресурсы</button>
@@ -480,7 +496,41 @@
         </div>
     </div>
 
-    <footer>
+    
+        <!-- ВКЛАДКА: ПРОФИЛЬ TG -->
+        <div id="tg-profile" class="tab-content" style="display:none;">
+            <div class="card glass-card" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 25px;">
+                <div id="tg-user-avatar-container" style="margin-bottom: 15px;">
+                    <div id="tg-avatar-placeholder" style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #00d2ff, #ff0055); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 2rem; font-weight: bold; color: white; box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);">
+                        APG
+                    </div>
+                </div>
+                <h2 id="tg-user-name" style="color: #00d2ff; font-size: 1.6rem; margin-bottom: 5px;">Загрузка профиля...</h2>
+                <p id="tg-user-username" style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 15px;">@username</p>
+                
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #94a3b8;">Статус в клубе:</span>
+                        <span style="color: #00ff88; font-weight: bold;">Участник APG Family</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #94a3b8;">Клубный ранг:</span>
+                        <span style="color: #f59e0b; font-weight: bold;">⚡ Driver VIP</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #94a3b8;">Telegram ID:</span>
+                        <span id="tg-user-id" style="color: #cbd5e1; font-family: monospace;">---</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="action-btn" onclick="openTab('services')" style="background: linear-gradient(135deg, #00d2ff, #0284c7); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">🛠 Записаться на СТО</button>
+                    <button class="action-btn" onclick="openTab('shop')" style="background: linear-gradient(135deg, #ff0055, #d90429); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">🛍 Клубный Мерч</button>
+                </div>
+            </div>
+        </div>
+
+<footer>
         <p>&copy; 2026 Auto Partners Group. Все права защищены.</p>
     </footer>
 
@@ -1165,6 +1215,95 @@
             document.getElementById('admin-manage-lists').innerHTML = html;
         }
     </script>
+
+    <!-- МОБИЛЬНОЕ СВАЙП-МЕНЮ (BOTTOM NAV) -->
+    <div class="mobile-bottom-nav">
+        <button class="nav-item active" onclick="openTab('main'); updateNav(this);">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Главная</span>
+        </button>
+        <button class="nav-item" onclick="openTab('services'); updateNav(this);">
+            <span class="nav-icon">🛠</span>
+            <span class="nav-text">Сервис</span>
+        </button>
+        <button class="nav-item" onclick="openTab('card'); updateNav(this);">
+            <span class="nav-icon">🎴</span>
+            <span class="nav-text">Визитка</span>
+        </button>
+        <button class="nav-item" onclick="openTab('korea'); updateNav(this);">
+            <span class="nav-icon">🚘</span>
+            <span class="nav-text">Авто</span>
+        </button>
+        <button class="nav-item" onclick="openTab('tg-profile'); updateNav(this);">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Профиль</span>
+        </button>
+    </div>
+
+
+<script>
+// --- TELEGRAM WEBAPP INTEGRATION ---
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const user = tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
+        if (user) {
+            document.getElementById('tg-user-name').innerText = (user.first_name || '') + ' ' + (user.last_name || '');
+            document.getElementById('tg-user-username').innerText = user.username ? '@' + user.username : '---';
+            document.getElementById('tg-user-id').innerText = user.id || '---';
+
+            if (user.photo_url) {
+                document.getElementById('tg-user-avatar-container').innerHTML = 
+                    `<img src="${user.photo_url}" style="width:80px; height:80px; border-radius:50%; border:2px solid #00d2ff; box-shadow:0 0 20px rgba(0,210,255,0.6);">`;
+            } else {
+                const initials = ((user.first_name ? user.first_name[0] : '') + (user.last_name ? user.last_name[0] : '')).toUpperCase() || 'APG';
+                document.getElementById('tg-avatar-placeholder').innerText = initials;
+            }
+        } else {
+            document.getElementById('tg-user-name').innerText = "Гость APG";
+            document.getElementById('tg-user-username').innerText = "Браузерная версия";
+            document.getElementById('tg-user-id').innerText = "123456789";
+        }
+    }
+});
+
+function updateNav(btn) {
+    document.querySelectorAll('.mobile-bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+// --- ИСКРЫ ПРИ КЛИКЕ ---
+document.addEventListener('click', function(e) {
+    for (let i = 0; i < 8; i++) {
+        const spark = document.createElement('div');
+        spark.className = 'spark';
+        document.body.appendChild(spark);
+
+        const dx = (Math.random() - 0.5) * 120 + 'px';
+        const dy = (Math.random() - 0.5) * 120 + 'px';
+
+        spark.style.left = e.pageX + 'px';
+        spark.style.top = e.pageY + 'px';
+        spark.style.setProperty('--dx', dx);
+        spark.style.setProperty('--dy', dy);
+
+        setTimeout(() => spark.remove(), 600);
+    }
+});
+
+// --- 3D TILT BACKGROUND LOGO ---
+document.addEventListener('mousemove', function(e) {
+    const logo = document.querySelector('.flying-logo-container');
+    if (logo) {
+        const x = (window.innerWidth / 2 - e.clientX) / 45;
+        const y = (window.innerHeight / 2 - e.clientY) / 45;
+        logo.style.transform = `translate(-50%, -50%) rotateY(${x}deg) rotateX(${-y}deg)`;
+    }
+});
+</script>
+
 </body>
 </html>
- 
