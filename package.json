@@ -1,1 +1,9 @@
-
+{
+  "name": "apg-project",
+  "version": "1.0.0",
+  "description": "Auto Partners Group Website",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo \"No build step required\""
+  }
+}
