@@ -164,25 +164,40 @@
             filter: brightness(1.15);
         }
     </style>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-    <!-- ВЕРХНИЙ НЕОНОВЫЙ ИНДИКАТОР ПРОКРУТКИ -->
-    <div id="scroll-progress-bar"></div>
-
-    <!-- НЕОНОВЫЙ СПОТЛАЙТ СВЕТ ПОД КУРСОРОМ -->
-    <div id="cursor-spotlight"></div>
-
-    <!-- ПЕРЕКЛЮЧАТЕЛЬ НЕОНОВЫХ ЦВЕТОВЫХ ТЕМ -->
-    <div class="theme-switcher-box" title="Сменить неоновую тему сайта">
-        <div class="theme-dot cyber" onclick="setNeonTheme('cyber')" title="Кибер (Синий/Розовый)"></div>
-        <div class="theme-dot violet" onclick="setNeonTheme('violet')" title="Фиолетовый неоновый"></div>
-        <div class="theme-dot gold" onclick="setNeonTheme('gold')" title="Золотой гоночный"></div>
-        <div class="theme-dot emerald" onclick="setNeonTheme('emerald')" title="Изумрудный драйв"></div>
+    <!-- 🏎️ ТАХОМЕТР PRELOADER (ЗАГРУЗЧИК APG) -->
+    <div id="apg-preloader">
+        <div class="tacho-container">
+            <svg class="tacho-svg" viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="80" class="tacho-bg-track"/>
+                <path d="M 35 150 A 80 80 0 1 1 165 150" class="tacho-glow-track"/>
+                <g class="tacho-ticks">
+                    <line x1="35" y1="150" x2="45" y2="142" />
+                    <line x1="30" y1="100" x2="42" y2="100" />
+                    <line x1="50" y1="50" x2="60" y2="58" />
+                    <line x1="100" y1="30" x2="100" y2="42" class="redline"/>
+                    <line x1="150" y1="50" x2="140" y2="58" class="redline"/>
+                    <line x1="170" y1="100" x2="158" y2="100" class="redline"/>
+                    <line x1="165" y1="150" x2="155" y2="142" class="redline"/>
+                </g>
+                <!-- Стрелка тахометра -->
+                <line id="tacho-needle" x1="100" y1="100" x2="40" y2="145" class="tacho-needle"/>
+                <circle cx="100" cy="100" r="10" class="tacho-center"/>
+            </svg>
+            <div class="tacho-text">APG <span>POWER</span></div>
+        </div>
     </div>
 
-<canvas id="particles-canvas"></canvas>
+    <!-- 💬 LIVE TOAST NOTIFICATION WIDGET -->
+    <div id="live-toast-container">
+        <div class="toast-icon">⚡</div>
+        <div class="toast-content">
+            <div class="toast-title" id="toast-title">APG Club Live</div>
+            <div class="toast-body" id="toast-body">Алексей только что записался на Чип-Тюнинг Stage 2 🚀</div>
+        </div>
+    </div>
 
 
     <div class="flying-logo-container">
@@ -191,27 +206,13 @@
 
     <header class="hero-banner">
         <div class="banner-overlay">
-            <div class="live-status-badge">
-                <span class="pulse-dot"></span>
-                🟢 APG КЛУБ •  | Прием заявок 24/7
-            </div>
             <h1>Auto Partners Group</h1>
             <p class="subtitle">Добро пожаловать в семью APG</p>
         </div>
         <button class="admin-trigger-btn" onclick="openAdminModal()">⚡</button>
     </header>
 
-    <!-- Бегущая неоновая лента -->
-    <div class="ticker-wrap">
-        <div class="ticker">
-            <span>🔥 AUTO PARTNERS GROUP • СТО ФАЭТОН •</span>
-            <span>🔥 AUTO PARTNERS GROUP • СТО ФАЭТОН •</span>
-        </div>
-    </div>
-
-
     <div class="navigation-tabs">
-        <button class="tab-btn" onclick="openTab('tg-profile')">👤 Профиль TG</button>
         <button class="tab-btn active" onclick="switchTab('chats-tab', this)">Ресурсы</button>
         <button class="tab-btn" onclick="switchTab('card-tab', this)">Визитка APG</button>
         <button class="tab-btn" onclick="switchTab('shop-tab', this)">Запчасти</button>
@@ -252,10 +253,17 @@
                         <p>Покупка и продажа ништяков для авто.</p>
                         <span class="btn">В магазин</span>
                     </a>
-                    <a href="https://max.ru/join/XCxK-_IF6qB47T_dwntlJI1RqkFLJLC32XBRzutMF1k" target="_blank" class="card">
-                        <h3>Группы MAX: Анти Police</h3>
-                        <p>Дополнительная платформа сообщества.</p>
-                        <span class="btn">Присоединиться</span>
+                    
+                    <a href="https://t.me/Tat_Audio" target="_blank" class="card">
+                        <h3>Студия автозвука</h3>
+                        <p>Качественный звук, инсталляции и настройка в авто.</p>
+                        <span class="btn">Перейти</span>
+                    </a>
+                    <a href="https://t.me/GlobalAutoExportt" target="_blank" class="card">
+                        <h3>Авто из Кореи, Японии, Китая</h3>
+                        <p>Заказ и доставка автомобилей напрямую под ключ.</p>
+                        <span class="btn">Подобрать авто</span>
+                    </a>
                 </div>
 
                 <div class="fenix-section">
@@ -501,41 +509,7 @@
         </div>
     </div>
 
-    
-        <!-- ВКЛАДКА: ПРОФИЛЬ TG -->
-        <div id="tg-profile" class="tab-content" style="display:none;">
-            <div class="card glass-card" style="max-width: 600px; margin: 20px auto; text-align: center; padding: 25px;">
-                <div id="tg-user-avatar-container" style="margin-bottom: 15px;">
-                    <div id="tg-avatar-placeholder" style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #00d2ff, #ff0055); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 2rem; font-weight: bold; color: white; box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);">
-                        APG
-                    </div>
-                </div>
-                <h2 id="tg-user-name" style="color: #00d2ff; font-size: 1.6rem; margin-bottom: 5px;">Загрузка профиля...</h2>
-                <p id="tg-user-username" style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 15px;">@username</p>
-                
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: left;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: #94a3b8;">Статус в клубе:</span>
-                        <span style="color: #00ff88; font-weight: bold;">Участник APG Family</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: #94a3b8;">Клубный ранг:</span>
-                        <span style="color: #f59e0b; font-weight: bold;">⚡ Driver VIP</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #94a3b8;">Telegram ID:</span>
-                        <span id="tg-user-id" style="color: #cbd5e1; font-family: monospace;">---</span>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="action-btn" onclick="openTab('services')" style="background: linear-gradient(135deg, #00d2ff, #0284c7); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">🛠 Записаться на СТО</button>
-                    <button class="action-btn" onclick="openTab('shop')" style="background: linear-gradient(135deg, #ff0055, #d90429); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">🛍 Клубный Мерч</button>
-                </div>
-            </div>
-        </div>
-
-<footer>
+    <footer>
         <p>&copy; 2026 Auto Partners Group. Все права защищены.</p>
     </footer>
 
@@ -1221,283 +1195,101 @@
         }
     </script>
 
-    <!-- МОБИЛЬНОЕ СВАЙП-МЕНЮ (BOTTOM NAV) -->
-    <div class="mobile-bottom-nav">
-        <button class="nav-item active" onclick="openTab('main'); updateNav(this);">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-text">Главная</span>
-        </button>
-        <button class="nav-item" onclick="openTab('services'); updateNav(this);">
-            <span class="nav-icon">🛠</span>
-            <span class="nav-text">Сервис</span>
-        </button>
-        <button class="nav-item" onclick="openTab('card'); updateNav(this);">
-            <span class="nav-icon">🎴</span>
-            <span class="nav-text">Визитка</span>
-        </button>
-        <button class="nav-item" onclick="openTab('korea'); updateNav(this);">
-            <span class="nav-icon">🚘</span>
-            <span class="nav-text">Авто</span>
-        </button>
-        <button class="nav-item" onclick="openTab('tg-profile'); updateNav(this);">
-            <span class="nav-icon">👤</span>
-            <span class="nav-text">Профиль</span>
-        </button>
-    </div>
-
-
 <script>
-// --- TELEGRAM WEBAPP INTEGRATION ---
+// --- 1. ТАХОМЕТР PRELOADER ---
+document.addEventListener("DOMContentLoaded", function() {
+    const needle = document.getElementById('tacho-needle');
+    const preloader = document.getElementById('apg-preloader');
+    
+    if (needle) {
+        setTimeout(() => {
+            needle.style.transform = 'rotate(240deg)'; // Ревущий взлёт стрелки
+        }, 100);
+        setTimeout(() => {
+            needle.style.transform = 'rotate(180deg)';
+        }, 500);
+    }
+    
+    setTimeout(() => {
+        if (preloader) preloader.classList.add('fade-out');
+    }, 1100);
+});
+
+// --- 2. 🌌 3D TILT НАКЛОН КАРТОЧЕК ПРИ НАВЕДЕНИИ ---
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card, .fenix-card, .review-card, .service-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('mousemove', function(e) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -10;
+            const rotateY = ((x - centerX) / centerX) * 10;
+            
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+    });
+});
+
+// --- 3. 💬 LIVE TOAST УВЕДОМЛЕНИЯ ОБ АКТИВНОСТИ ---
+const toastMessages = [
+    { title: "Запись на СТО", text: "Алексей только что записался на Stage 2 🚀" },
+    { title: "Telegram Stars", text: "Сергей купил 100 ⭐ через Fenix Stars" },
+    { title: "Отзыв APG", text: "Максим оставил отзыв: ⭐⭐⭐⭐⭐" },
+    { title: "Новый участник", text: "В клуб APG вступил владелец BMW M5 🏎️" },
+    { title: "Детейлинг APG", text: "Завершена оклейка кузова бронеплёнкой 🔥" }
+];
+
+let toastIdx = 0;
+function showNextToast() {
+    const container = document.getElementById('live-toast-container');
+    const title = document.getElementById('toast-title');
+    const body = document.getElementById('toast-body');
+    if (!container || !title || !body) return;
+    
+    const msg = toastMessages[toastIdx];
+    title.innerText = msg.title;
+    body.innerText = msg.text;
+    
+    container.classList.add('active');
+    
+    setTimeout(() => {
+        container.classList.remove('active');
+    }, 4500);
+    
+    toastIdx = (toastIdx + 1) % toastMessages.length;
+}
+
+setInterval(showNextToast, 16000);
+setTimeout(showNextToast, 3500);
+
+// --- 4. TELEGRAM AUTH & PROFILE (Регистрация через Telegram WebApp) ---
 document.addEventListener("DOMContentLoaded", function() {
     if (window.Telegram && window.Telegram.WebApp) {
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-
+        
         const user = tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
         if (user) {
-            document.getElementById('tg-user-name').innerText = (user.first_name || '') + ' ' + (user.last_name || '');
-            document.getElementById('tg-user-username').innerText = user.username ? '@' + user.username : '---';
-            document.getElementById('tg-user-id').innerText = user.id || '---';
-
-            if (user.photo_url) {
-                document.getElementById('tg-user-avatar-container').innerHTML = 
-                    `<img src="${user.photo_url}" style="width:80px; height:80px; border-radius:50%; border:2px solid #00d2ff; box-shadow:0 0 20px rgba(0,210,255,0.6);">`;
-            } else {
-                const initials = ((user.first_name ? user.first_name[0] : '') + (user.last_name ? user.last_name[0] : '')).toUpperCase() || 'APG';
-                document.getElementById('tg-avatar-placeholder').innerText = initials;
-            }
-        } else {
-            document.getElementById('tg-user-name').innerText = "Гость APG";
-            document.getElementById('tg-user-username').innerText = "Веб-версия";
-            document.getElementById('tg-user-id').innerText = "123456789";
+            const userNameElem = document.getElementById('tg-user-name');
+            const userHandleElem = document.getElementById('tg-user-handle');
+            const userAvatarElem = document.getElementById('tg-user-avatar');
+            
+            if (userNameElem) userNameElem.innerText = (user.first_name || '') + ' ' + (user.last_duration || user.last_name || '');
+            if (userHandleElem) userHandleElem.innerText = user.username ? '@' + user.username : 'ID: ' + user.id;
+            if (userAvatarElem && user.photo_url) userAvatarElem.src = user.photo_url;
         }
     }
-});
-
-function updateNav(btn) {
-    document.querySelectorAll('.mobile-bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
-    btn.classList.add('active');
-}
-
-// --- ИСКРЫ ПРИ КЛИКЕ ---
-document.addEventListener('click', function(e) {
-    for (let i = 0; i < 8; i++) {
-        const spark = document.createElement('div');
-        spark.className = 'spark';
-        document.body.appendChild(spark);
-
-        const dx = (Math.random() - 0.5) * 120 + 'px';
-        const dy = (Math.random() - 0.5) * 120 + 'px';
-
-        spark.style.left = e.pageX + 'px';
-        spark.style.top = e.pageY + 'px';
-        spark.style.setProperty('--dx', dx);
-        spark.style.setProperty('--dy', dy);
-
-        setTimeout(() => spark.remove(), 600);
-    }
-});
-
-// --- 3D TILT BACKGROUND LOGO ---
-document.addEventListener('mousemove', function(e) {
-    const logo = document.querySelector('.flying-logo-container');
-    if (logo) {
-        const x = (window.innerWidth / 2 - e.clientX) / 45;
-        const y = (window.innerHeight / 2 - e.clientY) / 45;
-        logo.style.transform = `translate(-50%, -50%) rotateY(${x}deg) rotateX(${-y}deg)`;
-    }
-});
-</script>
-
-
-<script>
-// --- ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР АВТО ---
-function calculateAutoCost() {
-    const price = parseFloat(document.getElementById('calc-price').value) || 0;
-    const engine = parseFloat(document.getElementById('calc-engine').value) || 0;
-    const country = document.getElementById('calc-country').value;
-    const age = document.getElementById('calc-age').value;
-
-    let delivery = country === 'korea' ? 2400 : 2800;
-    let dutyPerCc = 2.7;
-    if (age === '0-3') dutyPerCc = 3.5;
-    if (age === '5+') dutyPerCc = 4.8;
-
-    let customs = engine * dutyPerCc;
-    let serviceFee = 750;
-
-    let total = price + delivery + customs + serviceFee;
-    document.getElementById('calc-total').innerText = '$' + Math.round(total).toLocaleString('en-US');
-}
-
-// --- СИНТЕЗАТОР ЗВУКА АВТО/ВЫХЛОПА (Web Audio API) ---
-function playEngineSound(type) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
-
-    if (type === 'pops') {
-        // Pop & Bangs Sound Synthesis
-        for (let i = 0; i < 5; i++) {
-            setTimeout(() => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(120 - i * 15, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.12);
-                
-                gain.gain.setValueAtTime(0.6, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.12);
-            }, i * 90);
-        }
-    } else if (type === 'v8') {
-        // V8 Exhaust Roar
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(60, ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(180, ctx.currentTime + 0.8);
-        osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 1.8);
-
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.8);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.8);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 1.8);
-    } else if (type === 'bass') {
-        // Deep Subwoofer Bass Drop
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(90, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(25, ctx.currentTime + 1.5);
-
-        gain.gain.setValueAtTime(0.8, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 1.5);
-    }
-}
-
-// --- ИНТЕРАКТИВНЫЙ НЕОНОВЫЙ ФОН ЧАСТИЦ (CANVAS) ---
-document.addEventListener("DOMContentLoaded", function() {
-    const canvas = document.getElementById('particles-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    const particles = [];
-    const count = Math.min(window.innerWidth / 20, 45);
-
-    for (let i = 0; i < count; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            radius: Math.random() * 2 + 1,
-            color: Math.random() > 0.5 ? '#00d2ff' : '#ff0055',
-            vx: (Math.random() - 0.5) * 0.4,
-            vy: (Math.random() - 0.5) * 0.4,
-            alpha: Math.random() * 0.5 + 0.2
-        });
-    }
-
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-
-            if (p.x < 0) p.x = canvas.width;
-            if (p.x > canvas.width) p.x = 0;
-            if (p.y < 0) p.y = canvas.height;
-            if (p.y > canvas.height) p.y = 0;
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.globalAlpha = p.alpha;
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = p.color;
-            ctx.fill();
-        });
-        requestAnimationFrame(animate);
-    }
-    animate();
-});
-</script>
-
-
-<script>
-// --- 1. ВЕРХНИЙ ПРОГРЕСС-БАР ПРОКРУТКИ СТРАНИЦЫ ---
-window.addEventListener('scroll', function() {
-    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrolled = (winScroll / height) * 100;
-    const bar = document.getElementById('scroll-progress-bar');
-    if (bar) bar.style.width = scrolled + '%';
-});
-
-// --- 2. НЕОНОВАЯ АУРА / СПОТЛАЙТ ЗА КУРСОРОМ ---
-document.addEventListener('mousemove', function(e) {
-    const spotlight = document.getElementById('cursor-spotlight');
-    if (spotlight) {
-        spotlight.style.left = e.clientX + 'px';
-        spotlight.style.top = e.clientY + 'px';
-    }
-});
-
-// --- 3. СМЕНА НЕОНОВЫХ ЦВЕТОВЫХ ТЕМ В 1 КЛИК ---
-function setNeonTheme(theme) {
-    document.body.classList.remove('theme-violet', 'theme-gold', 'theme-emerald');
-    if (theme !== 'cyber') {
-        document.body.classList.add('theme-' + theme);
-    }
-    playClickSound(800, 0.05);
-}
-
-// --- 4. МИКРО UI ЗВУКИ ПРИ КЛИКАХ НА КНОПКИ (Web Audio API) ---
-function playClickSound(freq = 600, duration = 0.04) {
-    try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + duration);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + duration);
-    } catch(e){}
-}
-
-// Привязываем звук клика ко всем кнопкам и элементам
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('button, .tab-btn, .action-btn, .nav-item').forEach(btn => {
-        btn.addEventListener('click', () => playClickSound(700, 0.05));
-    });
 });
 </script>
 
