@@ -1193,7 +1193,55 @@
             });
             document.getElementById('admin-manage-lists').innerHTML = html;
         }
-    </script>
+    
+// --- ПОЛЗУНОК ДО / ПОСЛЕ ---
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('baSlider');
+    const before = document.getElementById('baBefore');
+    const handle = document.getElementById('baHandle');
+    let isDragging = false;
+
+    if (!container || !before || !handle) return;
+
+    function moveSlider(x) {
+        const rect = container.getBoundingClientRect();
+        let posX = x - rect.left;
+        if (posX < 0) posX = 0;
+        if (posX > rect.width) posX = rect.width;
+        const percentage = (posX / rect.width) * 100;
+        before.style.width = percentage + '%';
+        handle.style.left = percentage + '%';
+    }
+
+    container.addEventListener('mousedown', () => isDragging = true);
+    window.addEventListener('mouseup', () => isDragging = false);
+    container.addEventListener('mousemove', (e) => {
+        if (isDragging) moveSlider(e.clientX);
+    });
+
+    container.addEventListener('touchstart', () => isDragging = true);
+    window.addEventListener('touchend', () => isDragging = false);
+    container.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches[0]) moveSlider(e.touches[0].clientX);
+    });
+});
+
+function openBookingModal() { const m = document.getElementById('bookingModal'); if(m) m.classList.add('active'); }
+function closeBookingModal() { const m = document.getElementById('bookingModal'); if(m) m.classList.remove('active'); }
+
+function handleBookingSubmit(e) {
+    e.preventDefault();
+    const service = document.getElementById('bookService').value;
+    const car = document.getElementById('bookCar').value;
+    const date = document.getElementById('bookDate').value;
+    const contact = document.getElementById('bookContact').value;
+    
+    window.open(`https://t.me/fenix_digital_bot?start=booking_${encodeURIComponent(car)}`, '_blank');
+    closeBookingModal();
+    alert('Ваша заявка сформирована! Переходим в Telegram бота APG.');
+}
+
+</script>
 
 <script>
 // --- 1. ТАХОМЕТР PRELOADER ---
@@ -1242,11 +1290,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // --- 3. 💬 LIVE TOAST УВЕДОМЛЕНИЯ ОБ АКТИВНОСТИ ---
 const toastMessages = [
-    { title: "Запись на СТО", text: "Алексей только что записался на Stage 2 🚀" },
-    { title: "Telegram Stars", text: "Сергей купил 100 ⭐ через Fenix Stars" },
-    { title: "Отзыв APG", text: "Максим оставил отзыв: ⭐⭐⭐⭐⭐" },
-    { title: "Новый участник", text: "В клуб APG вступил владелец BMW M5 🏎️" },
-    { title: "Детейлинг APG", text: "Завершена оклейка кузова бронеплёнкой 🔥" }
+    { title: "Fenix Stars ⭐️", text: "Алексей только что купил 250 ⭐️ Telegram Stars" },
+    { title: "Fenix VPN 🚀", text: "Подключен новый высокоскоростной сервер Fenix!" },
+    { title: "Отзыв Fenix Stars", text: "Максим оставил отзыв: «Звезды пришли мгновенно!» ⭐⭐⭐⭐⭐" },
+    { title: "Fenix VPN 🛡️", text: "Пользователь продлил подписку Premium VPN на 1 год" },
+    { title: "Fenix Digital ⚡", text: "Новый клиент оформил подписку на Telegram Stars" }
 ];
 
 let toastIdx = 0;
@@ -1291,7 +1339,86 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 });
+
+// --- ПОЛЗУНОК ДО / ПОСЛЕ ---
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('baSlider');
+    const before = document.getElementById('baBefore');
+    const handle = document.getElementById('baHandle');
+    let isDragging = false;
+
+    if (!container || !before || !handle) return;
+
+    function moveSlider(x) {
+        const rect = container.getBoundingClientRect();
+        let posX = x - rect.left;
+        if (posX < 0) posX = 0;
+        if (posX > rect.width) posX = rect.width;
+        const percentage = (posX / rect.width) * 100;
+        before.style.width = percentage + '%';
+        handle.style.left = percentage + '%';
+    }
+
+    container.addEventListener('mousedown', () => isDragging = true);
+    window.addEventListener('mouseup', () => isDragging = false);
+    container.addEventListener('mousemove', (e) => {
+        if (isDragging) moveSlider(e.clientX);
+    });
+
+    container.addEventListener('touchstart', () => isDragging = true);
+    window.addEventListener('touchend', () => isDragging = false);
+    container.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches[0]) moveSlider(e.touches[0].clientX);
+    });
+});
+
+function openBookingModal() { const m = document.getElementById('bookingModal'); if(m) m.classList.add('active'); }
+function closeBookingModal() { const m = document.getElementById('bookingModal'); if(m) m.classList.remove('active'); }
+
+function handleBookingSubmit(e) {
+    e.preventDefault();
+    const service = document.getElementById('bookService').value;
+    const car = document.getElementById('bookCar').value;
+    const date = document.getElementById('bookDate').value;
+    const contact = document.getElementById('bookContact').value;
+    
+    window.open(`https://t.me/fenix_digital_bot?start=booking_${encodeURIComponent(car)}`, '_blank');
+    closeBookingModal();
+    alert('Ваша заявка сформирована! Переходим в Telegram бота APG.');
+}
+
 </script>
+
+
+    <!-- 📅 МОДАЛЬНОЕ ОКНО ЭКСПРЕСС-ЗАПИСИ НА СТО -->
+    <div id="bookingModal" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 14, 0.85); backdrop-filter: blur(15px); z-index: 999999; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease;">
+        <div class="modal-content cyber-modal" style="background: rgba(15, 23, 42, 0.95); border: 2px solid #00d2ff; border-radius: 24px; padding: 35px; width: 90%; max-width: 480px; position: relative; box-shadow: 0 20px 50px rgba(0, 210, 255, 0.3);">
+            <button class="modal-close" onclick="closeBookingModal()" style="position: absolute; top: 18px; right: 20px; background: none; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer;">✕</button>
+            <h2 style="color: #00d2ff; text-align: center; margin-bottom: 10px;">📅 ЗАПИСЬ НА СТО APG</h2>
+            <p style="text-align: center; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 20px;">Выберите услугу, удобную дату и время:</p>
+
+            <form onsubmit="handleBookingSubmit(event)" class="modal-form">
+                <label style="display: block; font-size: 0.85rem; color: #00d2ff; margin-top: 10px; margin-bottom: 4px; font-weight: bold;">Услуга:</label>
+                <select id="bookService" style="width: 100%; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(0, 210, 255, 0.3); color: #fff; padding: 12px; border-radius: 10px; margin-bottom: 12px; outline: none;">
+                    <option>🏎️ Чип-тюнинг (Stage 1 / Stage 2)</option>
+                    <option>🛡️ Оклейка кузова плёнкой / Детейлинг</option>
+                    <option>🔧 Техническое обслуживание (ТО)</option>
+                    <option>🔊 Тюнинг выхлопной системы / Автозвук</option>
+                </select>
+
+                <label style="display: block; font-size: 0.85rem; color: #00d2ff; margin-top: 10px; margin-bottom: 4px; font-weight: bold;">Марка и модель авто:</label>
+                <input type="text" id="bookCar" placeholder="Например: BMW M3 / Porsche 911" required style="width: 100%; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(0, 210, 255, 0.3); color: #fff; padding: 12px; border-radius: 10px; margin-bottom: 12px; outline: none;">
+
+                <label style="display: block; font-size: 0.85rem; color: #00d2ff; margin-top: 10px; margin-bottom: 4px; font-weight: bold;">Предпочтительная дата:</label>
+                <input type="date" id="bookDate" required style="width: 100%; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(0, 210, 255, 0.3); color: #fff; padding: 12px; border-radius: 10px; margin-bottom: 12px; outline: none;">
+
+                <label style="display: block; font-size: 0.85rem; color: #00d2ff; margin-top: 10px; margin-bottom: 4px; font-weight: bold;">Ваш телефон / Telegram:</label>
+                <input type="text" id="bookContact" placeholder="@username или +7 (999)..." required style="width: 100%; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(0, 210, 255, 0.3); color: #fff; padding: 12px; border-radius: 10px; margin-bottom: 12px; outline: none;">
+
+                <button type="submit" class="cyber-button" style="width: 100%; margin-top: 15px; padding: 14px; background: linear-gradient(90deg, #00d2ff, #0072ff); color: #fff; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 0 15px rgba(0,210,255,0.4);">ПОДТВЕРДИТЬ ЗАПИСЬ</button>
+            </form>
+        </div>
+    </div>
 
 </body>
 </html>
