@@ -163,6 +163,82 @@
         .fenix-card:hover .fenix-action-btn {
             filter: brightness(1.15);
         }
+/* Кнопка профиля (Кругляшек сверху) */
+.user-profile-btn {
+    position: fixed;
+    top: 15px;
+    right: 70px; /* слева от админ-кнопки ⚡ */
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d2ff, #0072ff);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.user-profile-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.7);
+}
+
+/* Форма авторизации и профиля */
+.auth-form-group {
+    margin-bottom: 12px;
+    text-align: left;
+}
+.auth-form-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #00d2ff;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+.auth-form-group input {
+    width: 100%;
+    padding: 10px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+}
+.profile-card-info {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(0, 210, 255, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+.profile-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d2ff, #0072ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 10px auto;
+}
+.profile-item {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    margin: 6px 0;
+    word-break: break-all;
+}
+.profile-item span {
+    color: #00d2ff;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -508,17 +584,126 @@
             </div>
         </div>
     </div>
+<button class="user-profile-btn" onclick="openAuthModal()" title="Личный кабинет">👤</button>
 
-    <footer>
+<div class="modal-overlay" id="userAuthModal">
+    <div class="modal-content" style="max-width: 400px;">
+        <span class="close-modal-btn" onclick="closeAuthModal()">&times;</span>
+        
+        <div id="auth-form-section">
+            <h3 style="margin-bottom: 15px; color: #fff;">Вход / Регистрация</h3>
+            
+            <div class="auth-form-group">
+                <label>Ваш Никнейм / Имя:</label>
+                <input type="text" id="user-nickname" placeholder="Например: @lenar_apg">
+            </div>
+
+            <div class="auth-form-group">
+                <label>Электронная почта (Email):</label>
+                <input type="email" id="user-email" placeholder="example@mail.ru">
+            </div>
+
+            <div class="auth-form-group">
+                <label>Придумайте Пароль:</label>
+                <input type="password" id="user-password" placeholder="••••••••">
+            </div>
+
+            <button class="tg-button blue-btn" onclick="saveUserRegistration()" style="margin-top: 10px; width: 100%;">Сохранить / Войти</button>
+        </div>
+
+        <div id="profile-info-section" style="display: none;">
+            <h3 style="margin-bottom: 15px; color: #fff;">Профиль Участника</h3>
+            
+            <div class="profile-card-info">
+                <div class="profile-avatar">🏎️</div>
+                <div class="profile-item">Никнейм: <span id="view-user-nickname">-</span></div>
+                <div class="profile-item">Email: <span id="view-user-email">-</span></div>
+                <div class="profile-item" style="font-size:0.8rem; color:#64748b;">Пароль сохранён: ••••••••</div>
+            </div>
+
+            <button class="tg-button" onclick="logoutUser()" style="background: #e11d48; width: 100%;">Выйти из аккаунта</button>
+        </div>
+    </div>
+</div>
+   <footer>
         <p>&copy; 2026 Auto Partners Group. Все права защищены.</p>
     </footer>
 
     <script>
+        // Переменная для хранения текущего пользователя
+        let currentUserData = JSON.parse(localStorage.getItem('apg_user_account')) || null;
+
+        function updateProfileUI() {
+            const profileBtn = document.querySelector('.user-profile-btn');
+            if (currentUserData && currentUserData.nickname) {
+                // Меняем иконку кругляшка при авторизации
+                if (profileBtn) profileBtn.innerText = '😎';
+                const authSec = document.getElementById('auth-form-section');
+                const profSec = document.getElementById('profile-info-section');
+                if (authSec) authSec.style.display = 'none';
+                if (profSec) profSec.style.display = 'block';
+                
+                const nickView = document.getElementById('view-user-nickname');
+                const emailView = document.getElementById('view-user-email');
+                if (nickView) nickView.innerText = currentUserData.nickname;
+                if (emailView) emailView.innerText = currentUserData.email;
+                
+                // Автоматически подставляем никнейм в отзыв и генератор карточек
+                if (document.getElementById('gen-nickname')) {
+                    document.getElementById('gen-nickname').value = currentUserData.nickname;
+                }
+                if (document.getElementById('review-author-input')) {
+                    document.getElementById('review-author-input').value = currentUserData.nickname;
+                }
+            } else {
+                if (profileBtn) profileBtn.innerText = '👤';
+                const authSec = document.getElementById('auth-form-section');
+                const profSec = document.getElementById('profile-info-section');
+                if (authSec) authSec.style.display = 'block';
+                if (profSec) profSec.style.display = 'none';
+            }
+        }
+
+        function openAuthModal() {
+            document.getElementById('userAuthModal').style.display = 'flex';
+            updateProfileUI();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('userAuthModal').style.display = 'none';
+        }
+
+        function saveUserRegistration() {
+            const nick = document.getElementById('user-nickname').value.trim();
+            const email = document.getElementById('user-email').value.trim();
+            const pass = document.getElementById('user-password').value.trim();
+
+            if (!nick || !email || !pass) {
+                alert('Пожалуйста, заполните все поля (Ник, Почта и Пароль)!');
+                return;
+            }
+
+            currentUserData = { nickname: nick, email: email, password: pass };
+            localStorage.setItem('apg_user_account', JSON.stringify(currentUserData));
+
+            alert('Регистрация успешна! Данные профиля сохранены.');
+            updateProfileUI();
+        }
+
+        function logoutUser() {
+            if (confirm('Вы уверены, что хотите выйти из профиля?')) {
+                localStorage.removeItem('apg_user_account');
+                currentUserData = null;
+                updateProfileUI();
+            }
+        }
+
+        // Переменные для работы с Firebase
         const FIREBASE_URL = "https://apg-site-56d91-default-rtdb.firebaseio.com/";
+        const TG_BOT_TOKEN = "";
+        const TG_CHAT_ID = "";
 
-        const TG_BOT_TOKEN = ""; 
-        const TG_CHAT_ID = ""; 
-
+        // ... И дальше ваш основной JavaScript-код ...
         let globalServices = [];
         let globalReviews = [];
         let globalPhotos = [];
