@@ -165,114 +165,7 @@
         }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-/* --- 3D TILT & CYBER EFFECTS ADDED BY FENIX --- */
-.card, .section-block, .card-generator-block {
-    transform-style: preserve-3d;
-    perspective: 1000px;
-    transition: transform 0.1s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
 
-/* Custom Cyber Cursor */
-body {
-    cursor: default;
-}
-.custom-cursor {
-    position: fixed;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #00d2ff;
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 99999;
-    box-shadow: 0 0 10px #00d2ff, inset 0 0 5px #00d2ff;
-    transition: width 0.2s, height: 0.2s, background 0.2s;
-}
-.custom-cursor-dot {
-    position: fixed;
-    width: 4px;
-    height: 4px;
-    background: #fff;
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 100000;
-}
-
-/* Sparks on click */
-@keyframes sparkAnim {
-    0% { transform: translate(0, 0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
-}
-.spark {
-    position: fixed;
-    width: 6px;
-    height: 6px;
-    background: #00d2ff;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 99998;
-    box-shadow: 0 0 8px #00d2ff;
-    animation: sparkAnim 0.6s forwards ease-out;
-}
-
-/* Holographic Sheen / Glassmorphism */
-.section-block, .card {
-    position: relative;
-    overflow: hidden;
-    background: rgba(15, 23, 42, 0.75) !important;
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 210, 255, 0.2);
-}
-.section-block::after, .card::after {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle, rgba(0,210,255,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.section-block:hover::after, .card:hover::after {
-    opacity: 1;
-}
-
-/* Neon Glitch Header */
-.banner-overlay h1 {
-    position: relative;
-    animation: neonPulse 3s infinite alternate;
-}
-@keyframes neonPulse {
-    0% { text-shadow: 0 0 10px rgba(0,210,255,0.4), 0 0 20px rgba(0,210,255,0.2); }
-    100% { text-shadow: 0 0 20px rgba(0,210,255,0.8), 0 0 35px rgba(0,210,255,0.5), 0 0 50px rgba(0,210,255,0.3); }
-}
-
-/* Cyber Canvas Background */
-#cyber-canvas {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* Developer Footer */
-.apg-footer-dev {
-    text-align: center;
-    padding: 25px;
-    margin-top: 40px;
-    border-top: 1px solid rgba(0, 210, 255, 0.2);
-    color: #94a3b8;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-    background: rgba(11, 15, 25, 0.9);
-}
-.apg-footer-dev span {
-    color: #00d2ff;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(0,210,255,0.4);
-}
-</style>
 </head>
 <body>
 
@@ -1428,14 +1321,6 @@ document.addEventListener('click', function(e) {
 });
 
 // --- 3D TILT BACKGROUND LOGO ---
-document.addEventListener('mousemove', function(e) {
-    const logo = document.querySelector('.flying-logo-container');
-    if (logo) {
-        const x = (window.innerWidth / 2 - e.clientX) / 45;
-        const y = (window.innerHeight / 2 - e.clientY) / 45;
-        logo.style.transform = `translate(-50%, -50%) rotateY(${x}deg) rotateX(${-y}deg)`;
-    }
-});
 </script>
 
 <div class="apg-footer-dev">Auto Partners Group &copy; 2026 | Разработчик: <span>@webFenix</span></div>
