@@ -163,6 +163,27 @@
         .fenix-card:hover .fenix-action-btn {
             filter: brightness(1.15);
         }
+    
+        /* --- ДОПОЛНИТЕЛЬНАЯ ПЛАВНОСТЬ --- */
+        html { scroll-behavior: smooth; }
+        .tab-content { opacity: 0; transform: translateY(6px); transition: opacity 0.3s ease, transform 0.3s ease; display: none; }
+        .tab-content.active { opacity: 1; transform: translateY(0); display: block; }
+        .card, .tab-btn, .tg-button, .fenix-card, .service-card { transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease; }
+        .card:hover, .fenix-card:hover { transform: translateY(-3px); }
+        .tab-btn:active, .tg-button:active, .card:active { transform: scale(0.97); transition: transform 0.1s ease; }
+        .modal, .admin-modal { opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .admin-modal[style*="block"], .modal[style*="block"] { opacity: 1; visibility: visible; }
+
+        /* --- МИНИ-ИГРА APG STREET RACING --- */
+        .game-block { background: rgba(15, 23, 42, 0.85); border: 2px solid #00d2ff; border-radius: 20px; padding: 20px; text-align: center; margin-top: 35px; box-shadow: 0 0 25px rgba(0, 210, 255, 0.25); }
+        .game-canvas-container { position: relative; width: 100%; max-width: 400px; height: 500px; margin: 0 auto; background: #070913; border: 2px solid #38bdf8; border-radius: 12px; overflow: hidden; }
+        #streetRacingCanvas { width: 100%; height: 100%; display: block; }
+        
+        /* --- БЛОК СТАТУСА СХОДКИ «ГДЕ СВОИ?» --- */
+        .meetup-block { background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(245, 158, 11, 0.15)); border: 2px solid #f59e0b; border-radius: 20px; padding: 20px; margin-top: 35px; box-shadow: 0 0 25px rgba(245, 158, 11, 0.2); text-align: center; }
+        .meetup-status-box { font-size: 1.1rem; font-weight: bold; color: #fff; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .meetup-counter { font-size: 1.4rem; color: #f59e0b; font-weight: bold; margin: 15px 0; text-shadow: 0 0 10px rgba(245,158,11,0.4); }
+
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -177,7 +198,7 @@
 
             <div class="live-status-badge">
                 <span class="pulse-dot"></span>
-                🟢 APG КЛУБ • Алина Евгеньевна работает | Прием заявок 24/7
+                🟢 APG КЛУБ • всех ждем и любим 
             </div>
 
             <h1>Auto Partners Group</h1>
@@ -189,8 +210,8 @@
     <!-- Бегущая неоновая лента -->
     <div class="ticker-wrap">
         <div class="ticker">
-            <span>🔥 AUTO PARTNERS GROUP • СТО ФАЭТОН •</span>
-            <span>🔥 AUTO PARTNERS GROUP • СТО ФАЭТОН •</span>
+            <span>🔥 AUTO PARTNERS GROUP•Алина всех любит и ценит</span>
+            <span>🔥 AUTO PARTNERS GROUP•Алина всех любит и ценит</span>
         </div>
     </div>
 
@@ -236,7 +257,52 @@
                         <p>Покупка и продажа ништяков для авто.</p>
                         <span class="btn">В магазин</span>
                     </a>
+                    <a href="https://max.ru/join/XCxK-_IF6qB47T_dwntlJI1RqkFLJLC32XBRzutMF1k" target="_blank" class="card">
+                        <h3>Группы MAX: Анти Police</h3>
+                        <p>Дополнительная платформа сообщества.</p>
+                        <span class="btn">Присоединиться</span>
+                    </a>
                 </div>
+
+                
+        <!-- БЛОК СТАТУСА СХОДКИ «ГДЕ СВОИ?» -->
+        <div class="meetup-block" id="meetup-widget">
+            <span class="fenix-badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b;">📍 Сходка APG в реальном времени</span>
+            <h3 style="color: #fff; margin-top: 10px;" id="meetup-title-text">Сегодня сбор в 21:00 на точке СТО Фаэтон</h3>
+            <div class="meetup-status-box" id="meetup-status-text">Статус: 🟡 Ожидание сбора колонны</div>
+            <div class="meetup-counter">👤 Нажали «Я буду»: <span id="meetup-count-val">0</span> участников</div>
+            <button class="tg-button" id="meetup-attend-btn" onclick="attendMeetup()" style="background: linear-gradient(90deg, #f59e0b, #d97706); color:#fff; font-weight:bold; max-width:280px; margin: 0 auto; display:block;">🔥 Я буду на сходке!</button>
+        </div>
+
+        <!-- БЛОК МИНИ-ИГРЫ «APG STREET RACING» -->
+        <div class="game-block" id="game-section">
+            <span class="fenix-badge" style="background: rgba(0, 210, 255, 0.2); color: #00d2ff; border: 1px solid #00d2ff;">🎮 Мини-игра APG</span>
+            <h3 style="color: #fff; margin: 10px 0 5px 0;">APG Street Racing / Суета</h3>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">Уворачивайся от встречных машин на ночной дороге! Управление: стрелки влево/вправо или тапы по экрану.</p>
+            
+            <div class="game-canvas-container">
+                <canvas id="streetRacingCanvas" width="400" height="500"></canvas>
+                <div id="game-start-screen" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(7,9,19,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
+                    <h2 style="color: #00d2ff; margin-bottom: 10px; text-shadow: 0 0 10px rgba(0,210,255,0.5);">НОЧНАЯ СУЕТА</h2>
+                    <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 20px;">Набери больше всего очков за неделю и стань Главным суетологом!</p>
+                    <button class="tg-button blue-btn" onclick="startStreetGame()" style="font-weight:bold; padding: 12px 25px;">🏎️ НАЧАТЬ ГОНКУ</button>
+                </div>
+                <div id="game-over-screen" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(7,9,19,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
+                    <h2 style="color: #ff0055; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,0,85,0.5);">АВАРИЯ! 💥</h2>
+                    <p style="color: #fff; font-size: 1rem; margin-bottom: 5px;">Собрано очков: <span id="final-score" style="color: #00d2ff; font-weight: bold;">0</span></p>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px;">Результат отправлен в лидерборд APG!</p>
+                    <button class="tg-button blue-btn" onclick="startStreetGame()" style="font-weight:bold; padding: 10px 20px;">🔄 ЕЩЕ РАЗ</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <h4 style="color: #f59e0b; margin-bottom: 8px;">🏆 Таблица лидеров (Суетологи недели)</h4>
+                <div id="leaderboard-list" style="font-size: 0.9rem; color: #cbd5e1; text-align: left; max-height: 120px; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>1. @lenar_apg</span><span style="color:#00d2ff;">1420 очков</span></div>
+                    <div style="display: flex; justify-content: space-between; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>2. @apg_alina</span><span style="color:#00d2ff;">1150 очков</span></div>
+                </div>
+            </div>
+        </div>
 
                 <div class="fenix-section">
                     <h3 class="fenix-section-title">⚡ Цифровые сервисы <span>Fenix</span></h3>
@@ -246,7 +312,7 @@
                             <div>
                                 <span class="fenix-badge">🛡️ Высокая скорость</span>
                                 <h3>🛡️ Fenix VPN Bot</h3>
-                                <p>Быстрый, стабильный и безопасный VPN для всех ваших устройств. Доступ без сбоев и ограничений.i love you</p>
+                                <p>Быстрый, стабильный и безопасный VPN для всех ваших устройств. Доступ без сбоев и ограничений.</p>
                             </div>
                             <div class="fenix-action-btn">🚀 Подключить VPN (@fenixVPNrobot)</div>
                         </a>
@@ -340,12 +406,6 @@
                             <p class="role">Заказные позиции</p>
                             <a href="https://t.me/LENAR_APG" target="_blank" class="tg-link">@LENAR_APG</a>
                             <a href="tel:+79061199720" class="phone-link">+7 (906) 119-97-20</a>
-                            </div>
-                             <div class="contact-item">
-                            <h4>webFenix</h4>
-                            <p class="role">разработчик сайта</p>
-                            <a href="https://t.me/webFenix" target="_blank" class="tg-link">@webFenix</a>
-                            <a href="tel:none" class="phone-link">none</a>
                         </div>
                     </div>
                 </div>
@@ -1296,5 +1356,201 @@ document.addEventListener('mousemove', function(e) {
 });
 </script>
 
+
+<script>
+    /* --- СКРИПТ СХОДКИ «ГДЕ СВОИ?» --- */
+    let isAttending = false;
+    async function loadMeetupData() {
+        try {
+            const res = await fetch(`${FIREBASE_URL}meetup.json`);
+            const data = await res.json();
+            if (data) {
+                if (data.title) document.getElementById('meetup-title-text').innerText = data.title;
+                if (data.status) document.getElementById('meetup-status-text').innerText = 'Статус: ' + data.status;
+                if (data.count !== undefined) document.getElementById('meetup-count-val').innerText = data.count;
+            }
+        } catch(e) { console.error("Meetup load error:", e); }
+    }
+
+    async function attendMeetup() {
+        isAttending = !isAttending;
+        const btn = document.getElementById('meetup-attend-btn');
+        let countElem = document.getElementById('meetup-count-val');
+        let currentCount = parseInt(countElem.innerText) || 0;
+        
+        if (isAttending) {
+            currentCount++;
+            btn.innerText = '✅ Вы записаны на сходку!';
+            btn.style.background = '#10b981';
+        } else {
+            currentCount = Math.max(0, currentCount - 1);
+            btn.innerText = '🔥 Я буду на сходке!';
+            btn.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+        }
+        countElem.innerText = currentCount;
+
+        try {
+            await fetch(`${FIREBASE_URL}meetup.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ count: currentCount })
+            });
+        } catch(e) { console.error("Meetup update error:", e); }
+    }
+
+    // --- СКРИПТ МИНИ-ИГРЫ «APG STREET RACING» ---
+    let gameInterval = null;
+    let gameRunning = false;
+    let score = 0;
+    let playerX = 175;
+    let obstacles = [];
+    let roadSpeed = 5;
+    let keys = { ArrowLeft: false, ArrowRight: false };
+
+    window.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft' || e.key === 'a') keys.ArrowLeft = true;
+        if (e.key === 'ArrowRight' || e.key === 'd') keys.ArrowRight = true;
+    });
+    window.addEventListener('keyup', e => {
+        if (e.key === 'ArrowLeft' || e.key === 'a') keys.ArrowLeft = false;
+        if (e.key === 'ArrowRight' || e.key === 'd') keys.ArrowRight = false;
+    });
+
+    function startStreetGame() {
+        document.getElementById('game-start-screen').style.display = 'none';
+        document.getElementById('game-over-screen').style.display = 'none';
+        score = 0;
+        playerX = 175;
+        obstacles = [];
+        roadSpeed = 5;
+        gameRunning = true;
+        
+        const canvas = document.getElementById('streetRacingCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Мобильные тапы
+        canvas.onclick = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            if (clickX < canvas.width / 2) {
+                playerX = Math.max(20, playerX - 40);
+            } else {
+                playerX = Math.min(canvas.width - 70, playerX + 40);
+            }
+        };
+
+        if (gameInterval) clearInterval(gameInterval);
+
+        gameInterval = setInterval(() => {
+            if (!gameRunning) return;
+
+            // Управление с клавиатуры
+            if (keys.ArrowLeft) playerX = Math.max(20, playerX - 7);
+            if (keys.ArrowRight) playerX = Math.min(canvas.width - 70, playerX + 7);
+
+            // Спавн препятствий
+            if (Math.random() < 0.03) {
+                const laneX = [30, 130, 230, 310][Math.floor(Math.random() * 4)];
+                obstacles.push({ x: laneX, y: -100, width: 50, height: 90, color: ['#ef4444', '#3b82f6', '#10b981', '#8b5cf6'][Math.floor(Math.random()*4)] });
+            }
+
+            // Движение препятствий
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].y += roadSpeed;
+                // Проверка столкновения
+                if (
+                    playerX < obstacles[i].x + obstacles[i].width &&
+                    playerX + 50 > obstacles[i].x &&
+                    400 < obstacles[i].y + obstacles[i].height &&
+                    450 > obstacles[i].y
+                ) {
+                    gameRunning = false;
+                    document.getElementById('final-score').innerText = Math.floor(score);
+                    document.getElementById('game-over-screen').style.display = 'flex';
+                    saveGameScore(Math.floor(score));
+                }
+                if (obstacles[i].y > 550) {
+                    obstacles.splice(i, 1);
+                    score += 10;
+                    roadSpeed = 5 + Math.floor(score / 100);
+                }
+            }
+
+            // Отрисовка
+            ctx.fillStyle = '#070913';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Разметка дороги
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([20, 20]);
+            ctx.beginPath();
+            ctx.moveTo(100, 0); ctx.lineTo(100, 500);
+            ctx.moveTo(200, 0); ctx.lineTo(200, 500);
+            ctx.moveTo(300, 0); ctx.lineTo(300, 500);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Отрисовка игрока (машина APG)
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(playerX, 400, 50, 90);
+            ctx.fillStyle = '#00d2ff';
+            ctx.fillRect(playerX + 8, 415, 34, 25); // лобовое
+
+            // Отрисовка врагов
+            obstacles.forEach(obs => {
+                ctx.fillStyle = obs.color;
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(obs.x + 8, obs.y + 15, 34, 20);
+            });
+
+            // Счет
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('Очки: ' + Math.floor(score), 15, 30);
+
+        }, 1000 / 60);
+    }
+
+    async function saveGameScore(finalScore) {
+        let nickname = "Гость APG";
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                nickname = '@' + (tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name);
+            } else {
+                nickname = document.getElementById('gen-nickname').value || "Суетолог APG";
+            }
+            await fetch(`${FIREBASE_URL}scores.json`, {
+                method: 'POST',
+                body: JSON.stringify({ name: nickname, score: finalScore })
+            });
+            loadLeaderboard();
+        } catch(e) { console.error("Score save error:", e); }
+    }
+
+    async function loadLeaderboard() {
+        try {
+            const res = await fetch(`${FIREBASE_URL}scores.json`);
+            const data = await res.json();
+            if (data) {
+                let arr = Object.values(data);
+                arr.sort((a, b) => b.score - a.score);
+                let html = '';
+                arr.slice(0, 5).forEach((item, idx) => {
+                    html += `<div style="display: flex; justify-content: space-between; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>${idx+1}. ${item.name}</span><span style="color:#00d2ff;">${item.score} очков</span></div>`;
+                });
+                document.getElementById('leaderboard-list').innerHTML = html;
+            }
+        } catch(e) { console.error("Leaderboard load error:", e); }
+    }
+
+    // Инициализация виджета сходки и лидерборда при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+        loadMeetupData();
+        loadLeaderboard();
+    });
+</script>
 </body>
 </html>
+
