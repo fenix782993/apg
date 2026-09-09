@@ -1,41 +1,33 @@
-# APG App V1
+# APG FULL V2
 
-Мобильная web-app / PWA-ready версия APG — Авто Партнёрская Группа.
-
-## Что уже работает
-- адаптивный интерфейс под телефон и ПК;
+Полноценный адаптивный APG Web/App прототип:
+- PC Web с боковой навигацией;
+- Mobile с нижней навигацией;
 - APG PASS;
-- каталог скидок;
-- партнёры;
-- «Мой автомобиль»;
+- скидки;
+- партнёры и поиск;
+- автомобиль;
+- история;
 - профиль;
-- генерация реального PNG QR через backend;
-- API `/api/discounts`;
-- API `/api/qr`;
-- healthcheck `/api/health`;
-- Render конфигурация.
-
-## Локальный запуск
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-Открыть: http://127.0.0.1:8000
+- SQLite;
+- API;
+- настоящая генерация QR;
+- одноразовый QR с 5-минутным сроком;
+- endpoint для погашения QR партнёром;
+- PWA manifest;
+- Render Blueprint.
 
 ## Render
+Build: `pip install -r requirements.txt`
+Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
-Подключить репозиторий GitHub и выбрать Blueprint / `render.yaml`.
-Или вручную:
-
-Build:
+## Local
+`python -m venv .venv`
+`.venv\Scripts\activate`
 `pip install -r requirements.txt`
+`uvicorn app.main:app --reload`
 
-Start:
-`uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+Открыть http://127.0.0.1:8000
 
-## Следующая версия
-Для production нужно добавить PostgreSQL, настоящую авторизацию, одноразовые QR-токены, кабинет партнёра со сканером и админ-панель.
+## Production
+Для реального запуска заменить demo-данные на PostgreSQL, добавить полноценную авторизацию, роли customer/partner/admin, сканирование камерой, HTTPS, rate limiting, резервные копии и управление партнёрами из админки.
