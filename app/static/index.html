@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>APG — Авто Партнёрская Группа</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><span class="mark">APG</span><span>Авто Партнёрская Группа</span></div>
+  <button class="avatar" onclick="show('profile')">F</button>
+</header>
+
+<main>
+<section id="home" class="screen active">
+  <div class="hero">
+    <div>
+      <span class="eyebrow">APG PASS</span>
+      <h1>Ваши авто.<br><b>Ваши скидки.</b></h1>
+      <p>Единая карта партнёров APG для автомобилистов.</p>
+      <button class="primary" onclick="openQR(10)">Показать QR скидки <span>→</span></button>
+    </div>
+    <div class="pass">
+      <div class="pass-top"><span>APG PASS</span><b>GOLD</b></div>
+      <div class="pass-id">APG #184729</div>
+      <div class="pass-bottom"><span>СКИДКА ДО</span><strong>10%</strong></div>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Быстрый доступ</h2></div>
+  <div class="quick">
+    <button onclick="show('discounts')"><i>%</i><span>Скидки</span></button>
+    <button onclick="show('partners')"><i>⌖</i><span>Партнёры</span></button>
+    <button onclick="show('car')"><i>🚘</i><span>Мой авто</span></button>
+    <button onclick="show('profile')"><i>◉</i><span>Профиль</span></button>
+  </div>
+
+  <div class="section-head"><h2>Акции APG</h2><button onclick="show('discounts')">Все</button></div>
+  <div class="cards" id="homeCards"></div>
+
+  <div class="saving"><span>💰</span><div><b>Вы сэкономили €247</b><small>за время участия в APG</small></div><strong>+€247</strong></div>
+</section>
+
+<section id="discounts" class="screen">
+  <div class="page-title"><span>APG</span><h1>Скидки</h1><p>Показывайте QR партнёру и получайте выгоду.</p></div>
+  <div class="filters"><button class="active">Все</button><button>Сервис</button><button>Шины</button><button>Запчасти</button><button>Мойка</button></div>
+  <div class="cards" id="discountCards"></div>
+</section>
+
+<section id="partners" class="screen">
+  <div class="page-title"><span>Сеть APG</span><h1>Партнёры</h1><p>Автомобильные компании в одной сети.</p></div>
+  <div class="search">⌕ <input placeholder="Поиск партнёра или услуги"></div>
+  <div class="partner-list">
+    <article><div class="logo">AS</div><div><b>APG Auto Service</b><small>ТО · Диагностика · Ремонт</small><small>⭐ 4.9 · 1.2 км</small></div><em>-15%</em></article>
+    <article><div class="logo">AT</div><div><b>APG Tire</b><small>Шины · Диски · Шиномонтаж</small><small>⭐ 4.8 · 2.4 км</small></div><em>-20%</em></article>
+    <article><div class="logo">AP</div><div><b>APG Parts</b><small>Запчасти и аксессуары</small><small>⭐ 4.7 · 3.1 км</small></div><em>-10%</em></article>
+    <article><div class="logo">AW</div><div><b>APG Wash</b><small>Мойка · Детейлинг</small><small>⭐ 4.9 · 0.8 км</small></div><em>-25%</em></article>
+  </div>
+</section>
+
+<section id="car" class="screen">
+  <div class="page-title"><span>Гараж</span><h1>Мой автомобиль</h1><p>Храните автомобиль и историю обслуживания в APG.</p></div>
+  <div class="car-card"><div class="car-photo">BMW</div><div><h2>BMW 530d</h2><p>2019 · Дизель · Автомат</p><b>182 430 км</b></div></div>
+  <div class="maintenance"><div><span>ТО</span><b>через 2 400 км</b></div><div class="progress"><i></i></div><small>Последнее обслуживание · 14.06.2026</small></div>
+  <h2 class="sub">История</h2>
+  <div class="history"><div><b>Замена масла</b><small>02.09.2026 · 182 100 км</small><strong>€86</strong></div><div><b>Тормозные колодки</b><small>15.06.2026 · 176 200 км</small><strong>€240</strong></div><div><b>Диагностика</b><small>01.03.2026 · 170 800 км</small><strong>€45</strong></div></div>
+</section>
+
+<section id="profile" class="screen">
+  <div class="profile-head"><div class="big-avatar">F</div><div><span>APG ID #184729</span><h1>Fenix</h1><p>Gold Member</p></div></div>
+  <div class="stats"><div><b>10%</b><small>скидка</small></div><div><b>17</b><small>скидок</small></div><div><b>€247</b><small>экономия</small></div></div>
+  <div class="menu">
+    <button onclick="openQR(10)">🎟️ <span>Моя скидка</span> <b>›</b></button>
+    <button>🚘 <span>Мои автомобили</span> <b>›</b></button>
+    <button>🧾 <span>История операций</span> <b>›</b></button>
+    <button>🔔 <span>Уведомления</span> <b>›</b></button>
+    <button>⚙️ <span>Настройки</span> <b>›</b></button>
+  </div>
+</section>
+</main>
+
+<nav class="nav">
+<button class="active" onclick="show('home')"><span>⌂</span>Главная</button>
+<button onclick="show('discounts')"><span>%</span>Скидки</button>
+<button onclick="show('partners')"><span>⌖</span>Партнёры</button>
+<button onclick="show('car')"><span>🚘</span>Авто</button>
+<button onclick="show('profile')"><span>◉</span>Профиль</button>
+</nav>
+</div>
+
+<div class="modal" id="qrModal">
+ <div class="modal-box">
+  <button class="close" onclick="closeQR()">×</button>
+  <span class="eyebrow">APG PASS</span><h2>Ваша скидка</h2>
+  <div class="discount-big" id="discountBig">10%</div>
+  <img id="qr" alt="QR скидки">
+  <b>APG #184729</b><small>Покажите QR партнёру APG</small>
+  <div class="valid">● QR действителен для предъявления</div>
+ </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
