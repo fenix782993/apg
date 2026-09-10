@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#050505"/><text x="96" y="118" text-anchor="middle" font-family="Arial,sans-serif" font-size="74" font-weight="900" fill="white">APG</text></svg>

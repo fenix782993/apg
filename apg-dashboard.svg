@@ -1,0 +1,21 @@
+# APG Production Checklist
+
+- [ ] PostgreSQL backup schedule configured
+- [ ] Strong secret keys generated
+- [ ] HTTPS enabled
+- [ ] Secure cookies enabled
+- [ ] S3 bucket private by default where appropriate
+- [ ] Upload size/type validation enabled
+- [ ] Rate limits enabled
+- [ ] Owner account password changed from demo credentials
+- [ ] Demo credentials removed before public launch
+- [ ] Real seller-company assignments configured
+- [ ] QR redemption tested with a physical phone
+- [ ] Review moderation tested
+- [ ] Push notifications configured
+- [ ] Privacy policy published
+- [ ] Terms published
+- [ ] GDPR/data deletion process reviewed
+- [ ] Google Play signing configured
+- [ ] Apple signing configured
+- [ ] Crash/error monitoring configured
