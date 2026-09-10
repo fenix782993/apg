@@ -75,7 +75,7 @@ def install(app,db,notify=None):
         uid=me(request); c=db(); rows=c.execute('''SELECT p.*,u.name,u.username,u.avatar,u.public_id,(SELECT COUNT(*) FROM post_likes l WHERE l.post_id=p.id) likes,(SELECT COUNT(*) FROM comments x WHERE x.post_id=p.id) comments,(SELECT 1 FROM post_likes l2 WHERE l2.post_id=p.id AND l2.user_id=? ) liked FROM posts p JOIN users u ON u.id=p.user_id ORDER BY p.created_at DESC LIMIT ?''',(uid,min(limit,50))).fetchall();c.close();return rows
     @app.post('/api/community/posts')
     async def post_create(request:Request):
-        uid=me(request); b=await request.json(); image=str(b.get('image',''))[:500];caption=str(b.get('caption',''))[:1000];car=b.get('car_id');c=db(); pid=c.execute('INSERT INTO posts(user_id,car_id,caption,image,kind,created_at) VALUES(?,?,?,?,?,?)',(uid,car,caption,image,'photo',now())).lastrowid;c.commit();c.close();grant(uid,20,'Фото');return {'ok':True,'id':pid}
+        uid=me(request); b=await request.json(); image=str(b.get('image',''))[:500];caption=str(b.get('caption',''))[:1000];car=b.get('car_id');c=db(); c.execute('INSERT INTO posts(user_id,car_id,caption,image,kind,created_at) VALUES(?,?,?,?,?,?)',(uid,car,caption,image,'photo',now()));pid=c.execute('SELECT id FROM posts WHERE user_id=? ORDER BY id DESC LIMIT 1',(uid,)).fetchone()['id'];c.commit();c.close();grant(uid,20,'Фото');return {'ok':True,'id':pid}
     @app.post('/api/community/posts/{pid}/like')
     def like(request:Request,pid:int):
         uid=me(request);c=db(); exists=row(c,'SELECT 1 FROM post_likes WHERE post_id=? AND user_id=?',(pid,uid));
