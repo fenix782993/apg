@@ -35,6 +35,11 @@ class DB:
             sql = sql.rstrip().rstrip(';') + ' ON CONFLICT DO NOTHING'
         if IS_POSTGRES:
             sql = sql.replace('?', '%s')
+        # SQLAlchemy 2.x exec_driver_sql does not accept a bare list
+        # as positional parameters. Normalize lists to tuples so endpoints
+        # that build dynamic filters (for example /api/offers) work.
+        if isinstance(params, list):
+            params = tuple(params)
         result = self.conn.exec_driver_sql(sql, params)
         return RowResult(result)
     def executescript(self, script):
