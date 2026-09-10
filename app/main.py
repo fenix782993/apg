@@ -51,11 +51,13 @@ def startup():
     init()
     from .v14 import init_v14
     init_v14(db)
+    from .community import init_community
+    init_community(db)
 
 def current(req):
     uid=req.session.get('uid');
     if not uid:return None
-    c=db(); r=c.execute('SELECT id,email,name,role,active,avatar,phone,username,created_at FROM users WHERE id=?',(uid,)).fetchone(); c.close(); return clean(r)
+    c=db(); r=c.execute('SELECT id,public_id,email,name,role,active,avatar,phone,username,created_at FROM users WHERE id=?',(uid,)).fetchone(); c.close(); return clean(r)
 def require(req,roles):
     u=current(req)
     if not u or u['role'] not in roles or not u['active']: raise HTTPException(401,'Требуется авторизация')
@@ -94,7 +96,7 @@ def get_csrf(request:Request): return {'token':csrf_token(request)}
 @app.get('/manifest.webmanifest')
 def manifest(): return JSONResponse(json.loads((BASE/'static'/'manifest.webmanifest').read_text(encoding='utf-8')))
 @app.get('/api/health')
-def health(): return {'status':'ok','service':'APG','version':'13.0.0','database':'postgresql' if IS_POSTGRES else 'sqlite','storage': 's3' if os.getenv('S3_BUCKET') else 'local'}
+def health(): return {'status':'ok','service':'APG','version':'15.0.0','database':'postgresql' if IS_POSTGRES else 'sqlite','storage': 's3' if os.getenv('S3_BUCKET') else 'local'}
 @app.get('/api/me')
 def me(request:Request): return {'user':current(request),'csrf':csrf_token(request)}
 @app.post('/api/login')
@@ -110,7 +112,7 @@ def register(request:Request,email:str=Form(...),password:str=Form(...),name:str
     rate_check(request,'register',5,300)
     if request.session.get('csrf'): check_csrf(request,csrf)
     email=validate_email(email)
-    if len(password)<8: raise HTTPException(400,'Пароль минимум 6 символов')
+    if len(password)<8: raise HTTPException(400,'Пароль минимум 8 символов')
     c=db();
     try:c.execute('INSERT INTO users(email,password,name,role,username,created_at) VALUES(?,?,?,?,?,?)',(email.strip().lower(),hashpw(password),name.strip(),'customer','u'+secrets.token_hex(4),now())); c.commit(); uid=c.execute('SELECT id FROM users WHERE email=?',(email.strip().lower(),)).fetchone()['id']
     except IntegrityError:c.close(); raise HTTPException(400,'Email уже зарегистрирован')
@@ -242,7 +244,7 @@ def notify_admins(title,body):
     for uid in ids: notify(uid,title,body)
 @app.get('/api/owner/users')
 def owner_users(request:Request):
-    require(request,['owner']); c=db(); r=c.execute('SELECT id,email,name,role,active,avatar,phone,username,created_at FROM users ORDER BY id DESC').fetchall(); c.close(); return [clean(x) for x in r]
+    require(request,['owner']); c=db(); r=c.execute('SELECT id,public_id,email,name,role,active,avatar,phone,username,created_at FROM users ORDER BY id DESC').fetchall(); c.close(); return [clean(x) for x in r]
 @app.patch('/api/owner/users/{uid}')
 def owner_user(request:Request,uid:int,role:str=Form(None),active:int=Form(None)):
     u=require(request,['owner']); c=db(); r=c.execute('SELECT id FROM users WHERE id=?',(uid,)).fetchone()
@@ -431,6 +433,9 @@ def stats(request:Request):
 
 from .v14 import register_v14
 register_v14(app, db, now, require, audit, notify)
+
+from .community import install as install_community
+install_community(app, db)
 
 HTML='''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050505"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/static/style.css"><title>APG</title></head><body><div id="app"><div class="boot"><b>APG</b><span>Загрузка платформы…</span></div></div><script src="/static/app.js"></script></body></html>'''
 
