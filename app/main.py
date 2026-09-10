@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 import qrcode
 
 BASE=Path(__file__).resolve().parent; DB=BASE/'apg.sqlite3'; UP=BASE/'static'/'uploads'; UP.mkdir(parents=True,exist_ok=True)
-app=FastAPI(title='APG V7 — Авто Партнёрская Группа',version='7.0.0')
+app=FastAPI(title='APG V7 — Авто Партнёрская Группа',version='8.0.0')
 app.add_middleware(SessionMiddleware,secret_key=os.getenv('APG_SECRET_KEY','dev-apg-change-me'))
 app.mount('/static',StaticFiles(directory=BASE/'static'),name='static')
 
@@ -74,7 +74,7 @@ def home(): return HTML
 @app.get('/manifest.webmanifest')
 def manifest(): return JSONResponse({'name':'APG — Авто Партнёрская Группа','short_name':'APG','start_url':'/','display':'standalone','background_color':'#050505','theme_color':'#050505','icons':[]})
 @app.get('/api/health')
-def health(): return {'status':'ok','service':'APG','version':'7.0.0'}
+def health(): return {'status':'ok','service':'APG','version':'8.0.0'}
 @app.get('/api/me')
 def me(request:Request): return {'user':current(request)}
 @app.post('/api/login')
@@ -277,6 +277,15 @@ def notifications(request:Request):
 @app.post('/api/notifications/read')
 def notifications_read(request:Request):
     u=require(request,['customer','seller','owner']); c=db(); c.execute('UPDATE notifications SET read=1 WHERE user_id=?',(u['id'],)); c.commit(); c.close(); return {'ok':True}
+@app.get('/api/qr-history')
+def qr_history(request:Request):
+    u=require(request,['seller','owner']); c=db()
+    if u['role']=='owner':
+        r=c.execute('SELECT q.*,o.title offer_title,c.name company_name,cu.name customer_name,su.name redeemed_name FROM qr_tokens q JOIN offers o ON o.id=q.offer_id JOIN companies c ON c.id=o.company_id JOIN users cu ON cu.id=q.user_id LEFT JOIN users su ON su.id=q.redeemed_by ORDER BY q.used_at DESC,q.token DESC LIMIT 200').fetchall()
+    else:
+        r=c.execute('SELECT q.*,o.title offer_title,c.name company_name,cu.name customer_name,su.name redeemed_name FROM qr_tokens q JOIN offers o ON o.id=q.offer_id JOIN companies c ON c.id=o.company_id JOIN users cu ON cu.id=q.user_id LEFT JOIN users su ON su.id=q.redeemed_by JOIN seller_companies sc ON sc.company_id=c.id AND sc.user_id=? ORDER BY q.used_at DESC,q.token DESC LIMIT 200',(u['id'],)).fetchall()
+    c.close(); return [clean(x) for x in r]
+
 @app.get('/api/stats')
 def stats(request:Request):
     u=require(request,['seller','owner']); c=db();
