@@ -47,7 +47,8 @@ def init_community(db):
     ach=[('first_photo','Первая фотография','Опубликуй первое фото','📷','posts',1),('first_game','Первая игра','Сыграй первую игру','🎮','games',1),('ten_games','Игрок','Сыграй 10 игр','🕹️','games',10),('hundred_likes','Первые 100','Получи 100 лайков','❤️','likes',100),('week_streak','Неделя','7 дней подряд','🔥','streak',7),('pass_10','Pass 10','Дойди до 10 уровня','🎫','pass_level',10)]
     for x in ach:c.execute('INSERT OR IGNORE INTO achievements(code,title,description,icon,condition_type,condition_value) VALUES(?,?,?,?,?,?)',x)
     if not row(c,'SELECT id FROM pass_seasons WHERE active=1'):
-        sid=c.execute('INSERT INTO pass_seasons(name,subtitle,levels,active,created_at) VALUES(?,?,?,?,?)',('SEASON 01 — NIGHT DRIVE','50 уровней. Бесплатный сезон APG.',50,1,now())).lastrowid
+        c.execute('INSERT INTO pass_seasons(name,subtitle,levels,active,created_at) VALUES(?,?,?,?,?)',('SEASON 01 — NIGHT DRIVE','50 уровней. Бесплатный сезон APG.',50,1,now()))
+        sid=row(c,'SELECT id FROM pass_seasons WHERE name=? ORDER BY id DESC LIMIT 1',('SEASON 01 — NIGHT DRIVE',))['id']
         for lvl in range(1,51):
             kind='title' if lvl in (10,20,30,40,50) else ('frame' if lvl%10==0 else 'xp')
             value=('APG LEGEND' if lvl==50 else f'Награда уровня {lvl}')
