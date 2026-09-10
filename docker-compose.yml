@@ -1,0 +1,30 @@
+services:
+  apg:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://apg:apg@db:5432/apg
+      APG_SECRET_KEY: change-this-in-production
+      APG_PASSWORD_SALT: change-this-too
+      APG_COOKIE_SECURE: "0"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: apg
+      POSTGRES_USER: apg
+      POSTGRES_PASSWORD: apg
+    ports:
+      - "5432:5432"
+    volumes:
+      - apg_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apg -d apg"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  apg_pgdata:

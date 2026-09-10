@@ -1,42 +1,38 @@
-import os, sqlite3, hashlib, secrets, io, json
+import os, hashlib, secrets, io, json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
+from sqlalchemy.exc import IntegrityError
 import qrcode
+from .db import db, schema, IS_POSTGRES, DATABASE_URL
+from .security import validate_email, validate_username, csrf_token, check_csrf
+from .ratelimit import check as rate_check
 
-BASE=Path(__file__).resolve().parent; DB=BASE/'apg.sqlite3'; UP=BASE/'static'/'uploads'; UP.mkdir(parents=True,exist_ok=True)
-app=FastAPI(title='APG V7 — Авто Партнёрская Группа',version='8.0.0')
-app.add_middleware(SessionMiddleware,secret_key=os.getenv('APG_SECRET_KEY','dev-apg-change-me'))
+BASE=Path(__file__).resolve().parent; UP=BASE/'static'/'uploads'; UP.mkdir(parents=True,exist_ok=True)
+app=FastAPI(title='APG V12 — Авто Партнёрская Группа',version='12.0.0',docs_url='/api/docs',redoc_url='/api/redoc')
+app.add_middleware(SessionMiddleware,secret_key=os.getenv('APG_SECRET_KEY','dev-apg-change-me'),max_age=60*60*24*7,same_site='lax',https_only=os.getenv('APG_COOKIE_SECURE','0')=='1')
 app.mount('/static',StaticFiles(directory=BASE/'static'),name='static')
 
-def db():
-    c=sqlite3.connect(DB); c.row_factory=sqlite3.Row; c.execute('PRAGMA foreign_keys=ON'); return c
+@app.middleware('http')
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'camera=(self), geolocation=(self), microphone=()'
+    if request.url.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-store'
+    return response
 
 def now(): return datetime.now(timezone.utc).isoformat()
-def hashpw(p): return hashlib.pbkdf2_hmac('sha256',p.encode(),b'apg-v7-salt',120000).hex()
+def hashpw(p): return hashlib.pbkdf2_hmac('sha256',p.encode(),os.getenv('APG_PASSWORD_SALT','apg-v9-salt').encode(),180000).hex()
 def clean(r): return dict(r) if r else None
 
 def init():
-    c=db(); c.executescript('''
-    CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,email TEXT UNIQUE NOT NULL,password TEXT NOT NULL,name TEXT NOT NULL,role TEXT NOT NULL,active INTEGER DEFAULT 1,avatar TEXT DEFAULT '',phone TEXT DEFAULT '',username TEXT UNIQUE,created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS companies(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,description TEXT DEFAULT '',logo TEXT DEFAULT '',cover TEXT DEFAULT '',address TEXT DEFAULT '',phone TEXT DEFAULT '',hours TEXT DEFAULT '',category TEXT DEFAULT 'Авто',active INTEGER DEFAULT 1,created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS seller_companies(user_id INTEGER NOT NULL,company_id INTEGER NOT NULL,PRIMARY KEY(user_id,company_id),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE CASCADE);
-    CREATE TABLE IF NOT EXISTS offers(id INTEGER PRIMARY KEY AUTOINCREMENT,company_id INTEGER NOT NULL,title TEXT NOT NULL,description TEXT DEFAULT '',discount TEXT DEFAULT '',valid_until TEXT DEFAULT '',image TEXT DEFAULT '',status TEXT DEFAULT 'pending',created_by INTEGER,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,FOREIGN KEY(company_id) REFERENCES companies(id));
-    CREATE TABLE IF NOT EXISTS gallery(id INTEGER PRIMARY KEY AUTOINCREMENT,company_id INTEGER NOT NULL,title TEXT DEFAULT '',caption TEXT DEFAULT '',image TEXT NOT NULL,sort_order INTEGER DEFAULT 0,active INTEGER DEFAULT 1,created_at TEXT NOT NULL,FOREIGN KEY(company_id) REFERENCES companies(id));
-    CREATE TABLE IF NOT EXISTS services(id INTEGER PRIMARY KEY AUTOINCREMENT,company_id INTEGER NOT NULL,title TEXT NOT NULL,description TEXT DEFAULT '',price TEXT DEFAULT '',image TEXT DEFAULT '',sort_order INTEGER DEFAULT 0,active INTEGER DEFAULT 1,created_at TEXT NOT NULL,FOREIGN KEY(company_id) REFERENCES companies(id));
-    CREATE TABLE IF NOT EXISTS reviews(id INTEGER PRIMARY KEY AUTOINCREMENT,company_id INTEGER NOT NULL,user_id INTEGER NOT NULL,rating INTEGER NOT NULL,body TEXT DEFAULT '',status TEXT DEFAULT 'pending',created_at TEXT NOT NULL,FOREIGN KEY(company_id) REFERENCES companies(id));
-    CREATE TABLE IF NOT EXISTS cars(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,model TEXT DEFAULT '',year TEXT DEFAULT '',plate TEXT DEFAULT '',vin TEXT DEFAULT '',mileage TEXT DEFAULT '',photo TEXT DEFAULT '',created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
-    CREATE TABLE IF NOT EXISTS history(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,car_id INTEGER,company_id INTEGER,title TEXT NOT NULL,note TEXT DEFAULT '',service_date TEXT DEFAULT '',created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id));
-    CREATE TABLE IF NOT EXISTS favorites(user_id INTEGER NOT NULL,company_id INTEGER NOT NULL,PRIMARY KEY(user_id,company_id));
-    CREATE TABLE IF NOT EXISTS qr_tokens(token TEXT PRIMARY KEY,offer_id INTEGER NOT NULL,user_id INTEGER NOT NULL,expires_at TEXT NOT NULL,used INTEGER DEFAULT 0,used_at TEXT DEFAULT '',redeemed_by INTEGER,FOREIGN KEY(offer_id) REFERENCES offers(id));
-    CREATE TABLE IF NOT EXISTS notifications(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,title TEXT NOT NULL,body TEXT DEFAULT '',read INTEGER DEFAULT 0,created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,title TEXT NOT NULL,details TEXT DEFAULT '',created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS settings(user_id INTEGER PRIMARY KEY,accent TEXT DEFAULT 'white',density TEXT DEFAULT 'comfortable',animations INTEGER DEFAULT 1);
-    ''')
-    t=now()
+    c=db(); c.executescript(schema()); t=now()
     def add(email,pw,name,role,username):
         if not c.execute('SELECT 1 FROM users WHERE email=?',(email,)).fetchone():
             c.execute('INSERT INTO users(email,password,name,role,username,created_at) VALUES(?,?,?,?,?,?)',(email,hashpw(pw),name,role,username,t))
@@ -67,30 +63,55 @@ async def savefile(f:UploadFile|None):
     if ext not in {'.jpg','.jpeg','.png','.webp'}: raise HTTPException(400,'Поддерживаются JPG, PNG, WEBP')
     data=await f.read()
     if len(data)>8*1024*1024: raise HTTPException(400,'Файл больше 8 МБ')
-    name=secrets.token_hex(14)+ext; (UP/name).write_bytes(data); return '/static/uploads/'+name
+    name=secrets.token_hex(14)+ext
+    bucket=os.getenv('S3_BUCKET','').strip()
+    if bucket:
+        try:
+            import boto3
+            client=boto3.client('s3',endpoint_url=os.getenv('S3_ENDPOINT') or None,
+                aws_access_key_id=os.getenv('S3_ACCESS_KEY'),aws_secret_access_key=os.getenv('S3_SECRET_KEY'),
+                region_name=os.getenv('S3_REGION','auto'))
+            key=f"apg/{datetime.now(timezone.utc).strftime('%Y/%m')}/{name}"
+            client.put_object(Bucket=bucket,Key=key,Body=data,ContentType=f.content_type or 'application/octet-stream')
+            public=os.getenv('S3_PUBLIC_BASE','').rstrip('/')
+            return f"{public}/{key}" if public else key
+        except Exception as e:
+            raise HTTPException(500,f'S3 upload failed: {e}')
+    (UP/name).write_bytes(data); return '/static/uploads/'+name
 
 @app.get('/',response_class=HTMLResponse)
 def home(): return HTML
+
+@app.get('/api/csrf')
+def get_csrf(request:Request): return {'token':csrf_token(request)}
 @app.get('/manifest.webmanifest')
-def manifest(): return JSONResponse({'name':'APG — Авто Партнёрская Группа','short_name':'APG','start_url':'/','display':'standalone','background_color':'#050505','theme_color':'#050505','icons':[]})
+def manifest(): return JSONResponse(json.loads((BASE/'static'/'manifest.webmanifest').read_text(encoding='utf-8')))
 @app.get('/api/health')
-def health(): return {'status':'ok','service':'APG','version':'8.0.0'}
+def health(): return {'status':'ok','service':'APG','version':'12.0.0','database':'postgresql' if IS_POSTGRES else 'sqlite','storage': 's3' if os.getenv('S3_BUCKET') else 'local'}
 @app.get('/api/me')
-def me(request:Request): return {'user':current(request)}
+def me(request:Request): return {'user':current(request),'csrf':csrf_token(request)}
 @app.post('/api/login')
-def login(request:Request,email:str=Form(...),password:str=Form(...)):
+def login(request:Request,email:str=Form(...),password:str=Form(...),csrf:str=Form('')):
+    rate_check(request,'login',8,60)
+    if request.session.get('csrf'): check_csrf(request,csrf)
+    email=validate_email(email)
     c=db(); r=c.execute('SELECT * FROM users WHERE email=? AND password=? AND active=1',(email.strip().lower(),hashpw(password))).fetchone(); c.close()
     if not r: raise HTTPException(401,'Неверный email или пароль')
     request.session['uid']=r['id']; audit(r['id'],'Вход в аккаунт'); return {'ok':True,'user':current(request)}
 @app.post('/api/register')
-def register(request:Request,email:str=Form(...),password:str=Form(...),name:str=Form(...)):
-    if len(password)<6: raise HTTPException(400,'Пароль минимум 6 символов')
+def register(request:Request,email:str=Form(...),password:str=Form(...),name:str=Form(...),csrf:str=Form('')):
+    rate_check(request,'register',5,300)
+    if request.session.get('csrf'): check_csrf(request,csrf)
+    email=validate_email(email)
+    if len(password)<8: raise HTTPException(400,'Пароль минимум 6 символов')
     c=db();
     try:c.execute('INSERT INTO users(email,password,name,role,username,created_at) VALUES(?,?,?,?,?,?)',(email.strip().lower(),hashpw(password),name.strip(),'customer','u'+secrets.token_hex(4),now())); c.commit(); uid=c.execute('SELECT id FROM users WHERE email=?',(email.strip().lower(),)).fetchone()['id']
-    except sqlite3.IntegrityError:c.close(); raise HTTPException(400,'Email уже зарегистрирован')
+    except IntegrityError:c.close(); raise HTTPException(400,'Email уже зарегистрирован')
     c.execute('INSERT OR IGNORE INTO settings(user_id) VALUES(?)',(uid,)); c.commit(); c.close(); request.session['uid']=uid; return {'ok':True,'user':current(request)}
 @app.post('/api/logout')
-def logout(request:Request): request.session.clear(); return {'ok':True}
+def logout(request:Request,csrf:str=Form('')):
+    check_csrf(request,csrf)
+    request.session.clear(); return {'ok':True}
 
 @app.get('/api/profile')
 def profile(request:Request):
@@ -100,7 +121,7 @@ async def profile_update(request:Request,name:str=Form(...),phone:str=Form(''),u
     u=require(request,['customer','seller','owner']); av=await savefile(avatar); c=db()
     try:
         c.execute('UPDATE users SET name=?,phone=?,username=?,avatar=COALESCE(NULLIF(?,\'\'),avatar) WHERE id=?',(name.strip(),phone.strip(),username.strip(),av,u['id'])); c.commit()
-    except sqlite3.IntegrityError:c.close(); raise HTTPException(400,'Username уже занят')
+    except IntegrityError:c.close(); raise HTTPException(400,'Username уже занят')
     c.close(); return {'user':current(request)}
 @app.post('/api/settings')
 def settings(request:Request,accent:str=Form('white'),density:str=Form('comfortable'),animations:int=Form(1)):
@@ -114,6 +135,19 @@ def companies(request:Request,q:str='',category:str=''):
     for r in rows:
         d=clean(r); d['favorite']=bool(c.execute('SELECT 1 FROM favorites WHERE user_id=? AND company_id=?',(uid,r['id'])).fetchone()); d['offers']=c.execute("SELECT COUNT(*) n FROM offers WHERE company_id=? AND status='active'",(r['id'],)).fetchone()['n']; d['services']=c.execute('SELECT COUNT(*) n FROM services WHERE company_id=? AND active=1',(r['id'],)).fetchone()['n']; out.append(d)
     c.close(); return out
+@app.get('/api/nearby')
+def nearby(lat:float,lon:float,radius_km:float=25):
+    c=db(); rows=c.execute('SELECT * FROM companies WHERE active=1 AND latitude IS NOT NULL AND longitude IS NOT NULL').fetchall(); c.close()
+    from math import radians,sin,cos,asin,sqrt
+    out=[]
+    for r in rows:
+        d=clean(r); la,lo=d.get('latitude'),d.get('longitude')
+        qlat,qlo=radians(lat),radians(lon); a1=radians(la)-qlat; a2=radians(lo)-qlo
+        a=sin(a1/2)**2+cos(qlat)*cos(radians(la))*sin(a2/2)**2
+        km=6371*2*asin(sqrt(a))
+        if km<=radius_km: d['distance_km']=round(km,1); out.append(d)
+    return sorted(out,key=lambda x:x['distance_km'])
+
 @app.get('/api/categories')
 def categories():
     c=db(); a=[x['category'] for x in c.execute('SELECT DISTINCT category FROM companies WHERE active=1 AND category<>\'\' ORDER BY category').fetchall()]; c.close(); return a
@@ -286,6 +320,19 @@ def qr_history(request:Request):
         r=c.execute('SELECT q.*,o.title offer_title,c.name company_name,cu.name customer_name,su.name redeemed_name FROM qr_tokens q JOIN offers o ON o.id=q.offer_id JOIN companies c ON c.id=o.company_id JOIN users cu ON cu.id=q.user_id LEFT JOIN users su ON su.id=q.redeemed_by JOIN seller_companies sc ON sc.company_id=c.id AND sc.user_id=? ORDER BY q.used_at DESC,q.token DESC LIMIT 200',(u['id'],)).fetchall()
     c.close(); return [clean(x) for x in r]
 
+@app.get('/api/companies/{cid}/directions')
+def company_directions(cid:int):
+    c=db(); r=c.execute('SELECT id,name,address,latitude,longitude FROM companies WHERE id=? AND active=1',(cid,)).fetchone(); c.close()
+    if not r: raise HTTPException(404,'Компания не найдена')
+    d=clean(r); addr=d.get('address') or ''
+    d['google_maps']=f'https://www.google.com/maps/search/?api=1&query={__import__("urllib.parse").parse.quote(addr)}'
+    d['openstreetmap']=f'https://www.openstreetmap.org/search?query={__import__("urllib.parse").parse.quote(addr)}'
+    return d
+
+@app.post('/api/push/register')
+def push_register(request:Request,token:str=Form(...),platform:str=Form('web')):
+    u=require(request,['customer','seller','owner']); c=db(); c.execute('INSERT OR IGNORE INTO push_tokens(user_id,token,platform,created_at) VALUES(?,?,?,?)',(u['id'],token[:512],platform[:32],now())); c.commit(); c.close(); return {'ok':True}
+
 @app.get('/api/stats')
 def stats(request:Request):
     u=require(request,['seller','owner']); c=db();
@@ -294,4 +341,16 @@ def stats(request:Request):
         base['my_offers']=c.execute('SELECT COUNT(*) n FROM offers WHERE created_by=?',(u['id'],)).fetchone()['n']; base['my_active']=c.execute("SELECT COUNT(*) n FROM offers WHERE created_by=? AND status='active'",(u['id'],)).fetchone()['n']
     c.close(); return base
 
-HTML='''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050505"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/static/style.css"><title>APG</title></head><body><div id="app"><div class="boot"><b>APG</b><span>Загрузка платформы…</span></div></div><script src="/static/app.js"></script></body></html>'''
+HTML='''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050505"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/static/style.css"><title>APG</title></head><body><div id="app"><div class="boot"><b>APG</b><span>Загрузка платформы…</span></div></div><script src="/static/app.js"></script></body></html>'''
+
+@app.get('/api/v12/status')
+def v12_status():
+    return {
+        'release': 'APG V12',
+        'status': 'production-ready scaffold',
+        'mobile': True,
+        'pwa': True,
+        'postgresql': IS_POSTGRES,
+        'persistent_storage': bool(os.getenv('S3_BUCKET')),
+        'features': ['roles','offers','qr','gallery','services','reviews','garage','favorites','notifications','audit','pwa','capacitor']
+    }

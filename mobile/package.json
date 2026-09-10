@@ -1,0 +1,22 @@
+{
+  "name": "apg-mobile-shell",
+  "private": true,
+  "version": "12.0.0",
+  "description": "APG mobile shell configuration",
+  "scripts": {
+    "sync": "npx cap sync",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.0",
+    "@capacitor/android": "^7.4.0",
+    "@capacitor/ios": "^7.4.0",
+    "@capacitor/camera": "^7.0.2",
+    "@capacitor/geolocation": "^7.0.1",
+    "@capacitor/push-notifications": "^7.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.0"
+  }
+}

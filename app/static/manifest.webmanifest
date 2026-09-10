@@ -1,0 +1,15 @@
+{
+  "name": "APG — Авто Партнёрская Группа",
+  "short_name": "APG",
+  "description": "Партнёрские автосервисы, услуги и скидки APG",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "orientation": "portrait-primary",
+  "icons": [
+    {"src":"/static/icon-192.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"},
+    {"src":"/static/icon-512.svg","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

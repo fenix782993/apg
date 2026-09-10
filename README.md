@@ -1,30 +1,23 @@
-# APG V8 — Авто Партнёрская Группа
+# APG V11 — Авто Партнёрская Группа
 
-Полноценная responsive/PWA-версия APG с Owner, Seller и Customer.
+Production-oriented APG platform: Owner / Seller / Customer, PostgreSQL, S3-compatible media, moderation, one-time QR, notifications, PWA and mobile shell preparation.
 
-## V8
-- камера QR через BarcodeDetector + ручной токен
-- история QR
-- уведомления
-- установка PWA
-- маршрут компании через Google Maps
-- share
-- профили и визуальные настройки
-- галерея, услуги, отзывы, гараж, история, избранное
-- модерация скидок и роли
-
-## Windows
+## Local Windows
 ```cmd
 py -3.12 -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
-Открой http://127.0.0.1:8000
+Open `http://127.0.0.1:8000`.
 
-## Demo
-Owner: owner@apg.local / apg1234
-Seller: seller@apg.local / seller1234
-Customer: user@apg.local / user1234
+## Demo accounts
+- Owner: `owner@apg.local` / `apg1234`
+- Seller: `seller@apg.local` / `seller1234`
+- Customer: `user@apg.local` / `user1234`
 
-Для камеры QR в production нужен HTTPS и разрешение браузера на камеру.
+## Production
+Set `DATABASE_URL`, `APG_SECRET_KEY`, `APG_COOKIE_SECURE=1`. For persistent images configure S3 variables. Deploy the web service with Render and PostgreSQL.
+
+## Mobile
+The `mobile/` folder contains Capacitor configuration for Android/iOS. See `docs/MOBILE_RELEASE.md`.
