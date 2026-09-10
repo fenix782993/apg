@@ -21,3 +21,6 @@ Set `DATABASE_URL`, `APG_SECRET_KEY`, `APG_COOKIE_SECURE=1`. For persistent imag
 
 ## Mobile
 The `mobile/` folder contains Capacitor configuration for Android/iOS. See `docs/MOBILE_RELEASE.md`.
+
+## V14
+Добавлены записи на услуги, чат клиент↔компания, промокоды, тарифы партнёров и коммерческий слой APG.

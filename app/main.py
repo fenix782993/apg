@@ -12,7 +12,7 @@ from .security import validate_email, validate_username, csrf_token, check_csrf
 from .ratelimit import check as rate_check
 
 BASE=Path(__file__).resolve().parent; UP=BASE/'static'/'uploads'; UP.mkdir(parents=True,exist_ok=True)
-app=FastAPI(title='APG V12 — Авто Партнёрская Группа',version='12.0.0',docs_url='/api/docs',redoc_url='/api/redoc')
+app=FastAPI(title='APG V14 — Авто Партнёрская Группа',version='14.0.0',docs_url='/api/docs',redoc_url='/api/redoc')
 app.add_middleware(SessionMiddleware,secret_key=os.getenv('APG_SECRET_KEY','dev-apg-change-me'),max_age=60*60*24*7,same_site='lax',https_only=os.getenv('APG_COOKIE_SECURE','0')=='1')
 app.mount('/static',StaticFiles(directory=BASE/'static'),name='static')
 
@@ -40,10 +40,17 @@ def init():
     if not c.execute('SELECT 1 FROM companies').fetchone():
         c.execute('INSERT INTO companies(name,description,address,phone,hours,category,created_at) VALUES(?,?,?,?,?,?,?)',('APG Partner Center','Партнёрский автомобильный центр APG','Адрес партнёра','+49 000 000000','Пн–Вс 09:00–20:00','Автосервис',t))
     cid=c.execute('SELECT id FROM companies ORDER BY id LIMIT 1').fetchone()['id']; sid=c.execute("SELECT id FROM users WHERE role='seller' LIMIT 1").fetchone()['id']
-    c.execute('INSERT OR IGNORE INTO seller_companies VALUES(?,?)',(sid,cid)); c.commit(); c.close()
+    c.execute('INSERT OR IGNORE INTO seller_companies VALUES(?,?)',(sid,cid))
+    if not c.execute('SELECT id FROM partner_plans LIMIT 1').fetchone():
+        for x in [('Start','Базовый тариф партнёра','0 €','month'),('Pro','Расширенный кабинет и аналитика','29 €','month'),('Business','Максимум инструментов APG','79 €','month')]:
+            c.execute('INSERT INTO partner_plans(name,description,price,period,created_at) VALUES(?,?,?,?,?)',(*x,t))
+    c.commit(); c.close()
 
 @app.on_event('startup')
-def startup(): init()
+def startup():
+    init()
+    from .v14 import init_v14
+    init_v14(db)
 
 def current(req):
     uid=req.session.get('uid');
@@ -87,7 +94,7 @@ def get_csrf(request:Request): return {'token':csrf_token(request)}
 @app.get('/manifest.webmanifest')
 def manifest(): return JSONResponse(json.loads((BASE/'static'/'manifest.webmanifest').read_text(encoding='utf-8')))
 @app.get('/api/health')
-def health(): return {'status':'ok','service':'APG','version':'12.0.0','database':'postgresql' if IS_POSTGRES else 'sqlite','storage': 's3' if os.getenv('S3_BUCKET') else 'local'}
+def health(): return {'status':'ok','service':'APG','version':'13.0.0','database':'postgresql' if IS_POSTGRES else 'sqlite','storage': 's3' if os.getenv('S3_BUCKET') else 'local'}
 @app.get('/api/me')
 def me(request:Request): return {'user':current(request),'csrf':csrf_token(request)}
 @app.post('/api/login')
@@ -333,6 +340,85 @@ def company_directions(cid:int):
 def push_register(request:Request,token:str=Form(...),platform:str=Form('web')):
     u=require(request,['customer','seller','owner']); c=db(); c.execute('INSERT OR IGNORE INTO push_tokens(user_id,token,platform,created_at) VALUES(?,?,?,?)',(u['id'],token[:512],platform[:32],now())); c.commit(); c.close(); return {'ok':True}
 
+
+@app.get('/api/bookings')
+def bookings(request:Request):
+    u=require(request,['customer','seller','owner']); c=db()
+    if u['role']=='customer':
+        rows=c.execute('SELECT b.*,co.name company_name,s.title service_name,ca.model car_model FROM bookings b JOIN companies co ON co.id=b.company_id LEFT JOIN services s ON s.id=b.service_id LEFT JOIN cars ca ON ca.id=b.car_id WHERE b.user_id=? ORDER BY b.created_at DESC',(u['id'],)).fetchall()
+    elif u['role']=='seller':
+        rows=c.execute('SELECT b.*,co.name company_name,s.title service_name,u.name user_name,ca.model car_model FROM bookings b JOIN companies co ON co.id=b.company_id LEFT JOIN services s ON s.id=b.service_id LEFT JOIN users u ON u.id=b.user_id LEFT JOIN cars ca ON ca.id=b.car_id JOIN seller_companies sc ON sc.company_id=b.company_id AND sc.user_id=? ORDER BY b.created_at DESC',(u['id'],)).fetchall()
+    else:
+        rows=c.execute('SELECT b.*,co.name company_name,s.title service_name,u.name user_name,ca.model car_model FROM bookings b JOIN companies co ON co.id=b.company_id LEFT JOIN services s ON s.id=b.service_id LEFT JOIN users u ON u.id=b.user_id LEFT JOIN cars ca ON ca.id=b.car_id ORDER BY b.created_at DESC').fetchall()
+    c.close(); return rows
+
+@app.post('/api/bookings')
+def create_booking(request:Request,company_id:int=Form(...),service_id:int=Form(0),car_id:int=Form(0),slot:str=Form(...),note:str=Form(''),csrf:str=Form('')):
+    u=require(request,['customer']); check_csrf(request,csrf); c=db()
+    if not c.execute('SELECT id FROM companies WHERE id=? AND active=1',(company_id,)).fetchone(): c.close(); raise HTTPException(404,'Компания не найдена')
+    c.execute('INSERT INTO bookings(user_id,company_id,service_id,car_id,slot,note,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)',(u['id'],company_id,service_id or None,car_id or None,slot,note[:1000],'pending',now(),now())); c.commit(); c.close(); audit(u['id'],'Новая запись',f'company={company_id}'); return {'ok':True}
+
+@app.patch('/api/bookings/{bid}')
+def booking_status(request:Request,bid:int,status:str=Form(...),csrf:str=Form('')):
+    u=require(request,['seller','owner']); check_csrf(request,csrf)
+    if status not in {'confirmed','completed','cancelled','pending'}: raise HTTPException(400,'Недопустимый статус')
+    c=db(); q='UPDATE bookings SET status=?,updated_at=? WHERE id=?'
+    if u['role']=='seller': q+=' AND company_id IN (SELECT company_id FROM seller_companies WHERE user_id=?)'; params=(status,now(),bid,u['id'])
+    else: params=(status,now(),bid)
+    c.execute(q,params); c.commit(); c.close(); return {'ok':True}
+
+@app.get('/api/chat/{company_id}')
+def chat(request:Request,company_id:int):
+    u=require(request,['customer','seller','owner']); c=db()
+    if u['role']=='customer':
+        c.execute('INSERT OR IGNORE INTO conversations(user_id,company_id,updated_at) VALUES(?,?,?)',(u['id'],company_id,now())); c.commit(); conv=c.execute('SELECT id FROM conversations WHERE user_id=? AND company_id=?',(u['id'],company_id)).fetchone()
+    else:
+        conv=c.execute('SELECT id FROM conversations WHERE company_id=? ORDER BY updated_at DESC LIMIT 1',(company_id,)).fetchone()
+    rows=[] if not conv else c.execute('SELECT m.*,u.name sender_name FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.conversation_id=? ORDER BY m.created_at ASC',(conv['id'],)).fetchall()
+    c.close(); return {'conversation_id':conv['id'] if conv else None,'messages':rows}
+
+@app.post('/api/chat/{company_id}')
+def send_chat(request:Request,company_id:int,body:str=Form(...),csrf:str=Form('')):
+    u=require(request,['customer','seller','owner']); check_csrf(request,csrf); body=body.strip()
+    if not body or len(body)>2000: raise HTTPException(400,'Сообщение 1–2000 символов')
+    c=db()
+    conv=c.execute('SELECT id FROM conversations WHERE user_id=? AND company_id=?',(u['id'],company_id)).fetchone() if u['role']=='customer' else c.execute('SELECT id FROM conversations WHERE company_id=? ORDER BY updated_at DESC LIMIT 1',(company_id,)).fetchone()
+    if not conv:
+        c.close(); raise HTTPException(404,'Диалог не найден')
+    c.execute('INSERT INTO messages(conversation_id,sender_id,body,created_at) VALUES(?,?,?,?)',(conv['id'],u['id'],body,now())); c.execute('UPDATE conversations SET updated_at=? WHERE id=?',(now(),conv['id'])); c.commit(); c.close(); return {'ok':True}
+
+@app.get('/api/promo')
+def promo_list(request:Request):
+    require(request,['customer','owner']); c=db(); rows=c.execute("SELECT * FROM promo_codes WHERE active=1 ORDER BY created_at DESC").fetchall(); c.close(); return rows
+
+@app.post('/api/promo/redeem')
+def promo_redeem(request:Request,code:str=Form(...),csrf:str=Form('')):
+    u=require(request,['customer']); check_csrf(request,csrf); code=code.strip().upper(); c=db(); p=c.execute('SELECT * FROM promo_codes WHERE code=? AND active=1',(code,)).fetchone()
+    if not p: c.close(); raise HTTPException(404,'Промокод не найден')
+    if p['expires_at'] and p['expires_at']<now(): c.close(); raise HTTPException(400,'Промокод истёк')
+    if p['max_uses'] and p['used_count']>=p['max_uses']: c.close(); raise HTTPException(400,'Лимит использований исчерпан')
+    try:
+        c.execute('INSERT INTO promo_redemptions(promo_id,user_id,created_at) VALUES(?,?,?)',(p['id'],u['id'],now())); c.execute('UPDATE promo_codes SET used_count=used_count+1 WHERE id=?',(p['id'],)); c.commit()
+    except IntegrityError: c.close(); raise HTTPException(400,'Ты уже использовал этот промокод')
+    c.close(); return {'ok':True,'promo':p}
+
+@app.post('/api/owner/promo')
+def owner_promo(request:Request,code:str=Form(...),description:str=Form(''),discount:str=Form(''),expires_at:str=Form(''),max_uses:int=Form(0),csrf:str=Form('')):
+    u=require(request,['owner']); check_csrf(request,csrf); code=code.strip().upper()
+    if not code or len(code)>40: raise HTTPException(400,'Некорректный код')
+    c=db()
+    try:c.execute('INSERT INTO promo_codes(code,description,discount,expires_at,max_uses,created_at) VALUES(?,?,?,?,?,?)',(code,description[:500],discount[:100],expires_at,max_uses,now())); c.commit()
+    except IntegrityError:c.close(); raise HTTPException(400,'Такой промокод уже есть')
+    c.close(); audit(u['id'],'Создан промокод',code); return {'ok':True}
+
+@app.get('/api/plans')
+def plans(request:Request):
+    require(request,['owner','seller']); c=db(); rows=c.execute('SELECT * FROM partner_plans WHERE active=1 ORDER BY id').fetchall(); c.close(); return rows
+
+@app.post('/api/owner/plans')
+def owner_plan(request:Request,name:str=Form(...),description:str=Form(''),price:str=Form(''),period:str=Form('month'),csrf:str=Form('')):
+    u=require(request,['owner']); check_csrf(request,csrf); c=db(); c.execute('INSERT INTO partner_plans(name,description,price,period,created_at) VALUES(?,?,?,?,?)',(name[:100],description[:500],price[:50],period[:30],now())); c.commit(); c.close(); return {'ok':True}
+
 @app.get('/api/stats')
 def stats(request:Request):
     u=require(request,['seller','owner']); c=db();
@@ -340,6 +426,11 @@ def stats(request:Request):
     if u['role']=='seller':
         base['my_offers']=c.execute('SELECT COUNT(*) n FROM offers WHERE created_by=?',(u['id'],)).fetchone()['n']; base['my_active']=c.execute("SELECT COUNT(*) n FROM offers WHERE created_by=? AND status='active'",(u['id'],)).fetchone()['n']
     c.close(); return base
+
+
+
+from .v14 import register_v14
+register_v14(app, db, now, require, audit, notify)
 
 HTML='''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050505"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/static/style.css"><title>APG</title></head><body><div id="app"><div class="boot"><b>APG</b><span>Загрузка платформы…</span></div></div><script src="/static/app.js"></script></body></html>'''
 
