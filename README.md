@@ -1,8 +1,21 @@
-# APG Community V16
-Новый frontend с нуля: Home, Gallery, Games, Pass, Feed, Leaderboard, Titles, Profile.
-Локальный запуск Windows:
+# APG V4 FULL
+Авто Партнерская Группа — responsive web app.
+
+## Local
+Backend:
+cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
-Открыть http://127.0.0.1:8000
+uvicorn main:app --reload --port 8000
+
+Frontend:
+cd frontend
+npm install
+npm run dev
+
+Open http://localhost:5173
+
+OWNER demo: owner@apg.local / owner123
+
+Catalog starts empty: no fake/demo discounts are seeded.
